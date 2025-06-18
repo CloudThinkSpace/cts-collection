@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "space.think.cloud.cts.collection"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "space.think.cloud.cts.collection"
