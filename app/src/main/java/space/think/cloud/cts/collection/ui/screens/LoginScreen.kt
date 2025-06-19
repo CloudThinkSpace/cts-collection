@@ -1,4 +1,4 @@
-package space.think.cloud.cts.lib.ui.screen
+package space.think.cloud.cts.collection.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

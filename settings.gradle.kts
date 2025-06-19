@@ -28,3 +28,4 @@ dependencyResolutionManagement {
 rootProject.name = "CtsCollection"
 include(":app")
 include(":ui")
+include(":network")
