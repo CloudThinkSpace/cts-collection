@@ -17,6 +17,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import space.think.cloud.cts.lib.ui.form.Item
+import space.think.cloud.cts.lib.ui.form.getItemNames
 
 /**
  * ClassName: SingleChoiceWidget
@@ -43,14 +44,15 @@ fun SingleChoiceWidget(
 ) {
 
     var expanded by remember { mutableStateOf(false) }
+    val newValue = getItemNames(value, items)
 
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded },
     ) {
         BaseWidget(
-            modifier.menuAnchor(),
-            value,
+            modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled),
+            newValue,
             title,
             unit,
             required,
@@ -94,9 +96,9 @@ fun SingleChoiceWidget(
                         .clickable {
                             // 去除已选中的item
                             items.forEach {
-                                it.isCheck.value = false
+                                it.isCheck = false
                             }
-                            item.isCheck.value = true
+                            item.isCheck = true
                             onValueChange(item)
                             expanded = false
                         }
@@ -106,7 +108,7 @@ fun SingleChoiceWidget(
 
                 ) {
                     Text(text = item.name)
-                    RadioButton(selected = item.isCheck.value, onClick = null)
+                    RadioButton(selected = item.isCheck, onClick = null)
                 }
 
                 HorizontalDivider(

@@ -65,8 +65,6 @@ fun DateWidget(
         }, year, month, day)
     }
 
-
-
     BaseWidget(
         modifier,
         value,

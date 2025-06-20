@@ -3,7 +3,9 @@ package space.think.cloud.cts.lib.ui.form.widgets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -18,9 +20,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
@@ -54,43 +53,17 @@ fun BaseWidget(
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 5.dp),
-        verticalArrangement = Arrangement.Center
+
+    Widget(
+        modifier = modifier,
+        title = title,
+        required = required,
+        errorMsg = errorMsg,
+        isError = isError,
+        description = description,
     ) {
-
-        Row {
-            // 是否显示必填符号
-            if (required) {
-                Text(
-                    text = "*",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    color = Color.Red
-                )
-            }
-            // 标题
-            Text(
-                text = title,
-                fontWeight = FontWeight.Bold,
-                fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                color = MaterialTheme.typography.titleMedium.color
-            )
-        }
-        // 说明文字
-        if (description?.isNotBlank() == true) {
-            Text(
-                text = description,
-                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                fontFamily = FontFamily.Monospace,
-                color = Color.Gray
-            )
-        }
-
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally)
                 .border(
@@ -133,16 +106,7 @@ fun BaseWidget(
             trailingIcon?.invoke()
 
         }
-        // 显示错误信息
-        if (isError) {
-            Text(
-                text = errorMsg ?: "",
-                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                color = Color.Red,
-                fontStyle = FontStyle.Italic,
-                fontFamily = FontFamily.Monospace
-            )
-        }
+
     }
 
 

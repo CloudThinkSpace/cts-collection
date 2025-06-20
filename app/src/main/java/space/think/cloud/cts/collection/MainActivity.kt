@@ -1,20 +1,21 @@
 package space.think.cloud.cts.collection
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import space.think.cloud.cts.collection.ui.screens.MainScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
 import space.think.cloud.cts.collection.ui.theme.CtsCollectionTheme
+import space.think.cloud.cts.lib.form.FormScreen
+import space.think.cloud.cts.lib.form.viewmodel.FormViewModel
 import space.think.cloud.cts.lib.ui.CircleText
 
 class MainActivity : ComponentActivity() {
@@ -34,10 +35,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
-    MainScreen(modifier)
+    val viewModel: FormViewModel = viewModel()
+    FormScreen(modifier = modifier, viewModel = viewModel)
 }
+
 
 @Preview(showBackground = true)
 @Composable

@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.material3.navigation3)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.google.gson)
     implementation(project(":network"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

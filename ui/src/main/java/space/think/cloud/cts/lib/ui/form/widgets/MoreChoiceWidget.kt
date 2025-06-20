@@ -17,6 +17,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import space.think.cloud.cts.lib.ui.form.Item
+import space.think.cloud.cts.lib.ui.form.getItemNames
 
 /**
  * ClassName: MoreChoiceWidget
@@ -44,13 +45,15 @@ fun MoreChoiceWidget(
 
     var expanded by remember { mutableStateOf(false) }
 
+    val newValue = getItemNames(value, items)
+
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded },
     ) {
         BaseWidget(
-            modifier.menuAnchor(),
-            value,
+            modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled),
+            newValue,
             title,
             unit,
             required,
@@ -92,8 +95,8 @@ fun MoreChoiceWidget(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            item.isCheck.value = !item.isCheck.value
-                            onValueChange(items.filter { it.isCheck.value })
+                            item.isCheck = !item.isCheck
+                            onValueChange(items.filter { select -> select.isCheck })
                         }
                         .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -101,13 +104,13 @@ fun MoreChoiceWidget(
 
                 ) {
                     Text(text = item.name)
-                    Checkbox(checked = item.isCheck.value, onCheckedChange = null)
+                    Checkbox(checked = item.isCheck, onCheckedChange = null)
                 }
-
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier
                         .height(0.5.dp)
-                        .fillMaxWidth(), color = Color.Black
+                        .fillMaxWidth(),
+                    color = Color.Gray
                 )
             }
         }

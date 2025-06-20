@@ -1,16 +1,12 @@
 package space.think.cloud.cts.lib.ui.form.widgets
 
 import android.net.Uri
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import space.think.cloud.cts.lib.ui.form.ImageItem
@@ -45,40 +41,14 @@ fun ImageWidget(
 
     val localSoftwareKeyboardController = LocalSoftwareKeyboardController.current
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 5.dp),
-        verticalArrangement = Arrangement.Center
+    Widget(
+        modifier = modifier,
+        title = title,
+        required = required,
+        errorMsg = errorMsg,
+        isError = isError,
+        description = description,
     ) {
-
-        Row {
-            // 是否显示必填符号
-            if (required) {
-                Text(
-                    text = "*",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                    color = Color.Red
-                )
-            }
-            // 标题
-            Text(
-                text = title,
-                fontWeight = FontWeight.Bold,
-                fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                color = MaterialTheme.typography.titleMedium.color
-            )
-        }
-        // 说明文字
-        if (description?.isNotBlank() == true) {
-            Text(
-                text = description,
-                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                fontFamily = FontFamily.Monospace,
-                color = Color.Gray
-            )
-        }
         // 计算总行数
         val rows = ceil(subTitles.size.toDouble() / lineMaxNum).toInt()
 
@@ -122,17 +92,6 @@ fun ImageWidget(
                 }
             }
 
-        }
-
-        // 显示错误信息
-        if (isError) {
-            Text(
-                text = errorMsg ?: "",
-                fontSize = MaterialTheme.typography.labelSmall.fontSize,
-                color = Color.Red,
-                fontStyle = FontStyle.Italic,
-                fontFamily = FontFamily.Monospace
-            )
         }
     }
 
