@@ -374,8 +374,10 @@ fun FormScreen(
                             enabled = localField.enabled,
                             subTitles = localField.subTitles ?: listOf(),
                             description = localField.description,
-                        ) { index, key ->
-
+                        ) { newValue ->
+                            val updated = localField.copy(value = newValue)
+                            localField = updated
+                            viewModel.updateField(updated)
                         }
                     }
 

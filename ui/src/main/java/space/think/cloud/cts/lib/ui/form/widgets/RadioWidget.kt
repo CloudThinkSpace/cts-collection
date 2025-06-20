@@ -2,8 +2,13 @@ package space.think.cloud.cts.lib.ui.form.widgets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import space.think.cloud.cts.lib.ui.form.Item
-import space.think.cloud.cts.lib.ui.form.widgets.layout.FlowLayout
 
 /**
  * ClassName: RadioWidget
@@ -44,34 +48,52 @@ fun RadioWidget(
         isError = isError,
         description = description,
     ) {
-        FlowLayout(
+        Column(
             modifier = Modifier
                 .border(
-                    .5.dp,
-                    if (isError) Color.Red else Color.Gray,
-                    shape = RoundedCornerShape(5.dp)
+                    .5.dp, if (isError) Color.Red else Color.Gray, shape = RoundedCornerShape(5.dp)
                 )
                 .background(
-                    if (enabled) Color.White else Color(0xFFE9E9E9),
-                    RoundedCornerShape(5.dp)
+                    if (enabled) Color.White else Color(0xFFE9E9E9), RoundedCornerShape(5.dp)
                 )
+                .fillMaxWidth()
         ) {
-            items.forEach {
+            items.forEachIndexed { index, item ->
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
+                ) {
                     RadioButton(
-                        selected = value == it.code,
-                        onClick = {
+                        selected = value == item.code, onClick = {
                             // 去除已选中的item
                             items.forEach {
                                 it.isCheck = false
                             }
-                            it.isCheck = true
-                            onValueChange(it)
-                        },
-                        enabled = enabled
+                            item.isCheck = true
+                            onValueChange(item)
+                        }, enabled = enabled
                     )
-                    Text(text = it.name, style = textStyle)
+                    Text(
+                        modifier = Modifier.clickable {
+                            if (enabled) {
+                                // 去除已选中的item
+                                items.forEach {
+                                    it.isCheck = false
+                                }
+                                item.isCheck = true
+                                onValueChange(item)
+                            }
+                        },
+                        text = item.name, style = textStyle
+                    )
+                }
+                if (index < items.lastIndex) {
+                    HorizontalDivider(
+                        color = Color.LightGray,
+                        thickness = 0.3.dp,
+                        modifier = Modifier.padding(horizontal = 0.dp)
+                    )
                 }
             }
 

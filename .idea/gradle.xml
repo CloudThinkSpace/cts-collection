@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/form" />
             <option value="$PROJECT_DIR$/network" />
+            <option value="$PROJECT_DIR$/photo" />
             <option value="$PROJECT_DIR$/ui" />
           </set>
         </option>

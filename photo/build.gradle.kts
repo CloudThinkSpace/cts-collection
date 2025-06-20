@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "space.think.cloud.cts.lib.ui"
+    namespace = "space.think.cloud.cts.lib.photo"
     compileSdk = 36
 
     defaultConfig {
@@ -34,7 +34,6 @@ android {
     buildFeatures {
         compose = true
     }
-    resourcePrefix = "lib_ui"
 }
 
 dependencies {
@@ -49,14 +48,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons)
-    implementation(libs.androidx.navigation3.runtime)
-    implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.material3.navigation3)
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
-    implementation(libs.google.gson)
-    implementation(project(":network"))
-    implementation(project(":photo"))
+    implementation(libs.accompanist.permissions)
+    implementation(libs.accompanist.placeholder.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

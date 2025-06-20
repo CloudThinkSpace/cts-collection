@@ -4,8 +4,18 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -36,14 +46,20 @@ fun ImageWidget(
     enabled: Boolean = true,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onPreview: ((Uri) -> Unit)? = null,
-    onDelete: ((Int) -> Unit)? = null,
-    onClick: (Int, String) -> Unit,
+    onChangeValue: (String) -> Unit,
 ) {
 
     val localSoftwareKeyboardController = LocalSoftwareKeyboardController.current
-
     // 解析数据
-    val newValue = StringUtil.jsonToMap<Int, ImageItem>(value)
+    val newValue = StringUtil.jsonToMap(value)
+    // 是否显示删除图片Dalog
+    var isOpenDelete by remember {
+        mutableStateOf(false)
+    }
+    // 图片当前位置
+    var currentImageIndex by remember {
+        mutableIntStateOf(0)
+    }
 
     Widget(
         modifier = modifier,
@@ -71,25 +87,29 @@ fun ImageWidget(
                 repeat(rowNum) {
                     // 当前图片位置
                     val index = it + i * lineMaxNum
+
                     // 当前位置的图片是否存在
                     ImageView(
+                        index = index,
                         size = size,
                         title = subTitles[index],
                         uri = newValue[index]?.path,
                         isError = isError,
                         loading = newValue[index]?.loading ?: false,
                         onDelete = {
-                            onDelete?.invoke(index)
+                            if (enabled) {
+                                isOpenDelete = true
+                                currentImageIndex = index
+                            }
                         },
                         onPreview = onPreview
-                    ) {
+                    ) { idx, path ->
                         localSoftwareKeyboardController?.hide()
                         if (enabled) {
-                            // 点击的图片位置
-                            onClick(
-                                index,
-                                subTitles[index]
-                            )
+                            val temp = newValue.toMutableMap()
+                            temp[idx] = ImageItem(name = subTitles[idx], path = path)
+                            val json = StringUtil.mapToString(temp)
+                            onChangeValue(json)
                         }
 
                     }
@@ -98,5 +118,33 @@ fun ImageWidget(
 
         }
     }
+
+    if (isOpenDelete) AlertDialog(
+        onDismissRequest = {
+            isOpenDelete = false
+        },
+        shape = RoundedCornerShape(5.dp),
+        title = { Text(text = "操作提示") },
+        text = { Text(text = "确认要删除照片？", color = Color.Gray) },
+        confirmButton = {
+            TextButton(onClick = {
+                isOpenDelete = false
+                val temp = newValue.toMutableMap()
+                temp.remove(currentImageIndex)
+                val json = StringUtil.mapToString(temp)
+                onChangeValue(json)
+
+            }) {
+                Text(text = "确定")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                isOpenDelete = false
+            }) {
+                Text(text = "取消")
+            }
+        })
+
 
 }

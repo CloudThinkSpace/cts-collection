@@ -22,9 +22,9 @@ import androidx.compose.ui.unit.dp
 fun Modifier.dashBorder(
     color: Color = Color.Gray,
     width: Dp = 1.dp,
-    cornerRadiusDp: Dp = 0.dp,
-    dashLength: Dp = 20.dp,
-    gapLength: Dp = 5.dp
+    cornerRadiusDp: Dp = 5.dp,
+    dashLength: Dp = 5.dp,
+    gapLength: Dp = 3.dp
 ) = drawBehind {
     drawRoundRect(
         color = color,

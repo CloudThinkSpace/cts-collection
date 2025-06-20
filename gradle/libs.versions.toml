@@ -16,7 +16,9 @@ material = "1.12.0"
 retrofit = "2.9.0"
 viewmodel = "2.9.1"
 coil = "3.2.0"
-gson = "2.8.8"
+gson = "2.11.0"
+accompanist = "0.37.3"
+accompanistPlaceholder = "0.36.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,9 +44,11 @@ material = { group = "com.google.android.material", name = "material", version.r
 squareup-retrofit2 = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 squareup-retrofit2-json = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 androidx-lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "viewmodel" }
-coil-compose = { group = "io.coil-kt.coil3", name ="coil-compose", version.ref = "coil"}
-coil-network-okhttp = { group = "io.coil-kt.coil3", name ="coil-network-okhttp", version.ref = "coil"}
-google-gson = { group ="com.google.code.gson", name="gson", version.ref = "gson"}
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
+google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
+accompanist-placeholder-material = { group = "com.google.accompanist", name = "accompanist-placeholder-material", version.ref = "accompanistPlaceholder" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
