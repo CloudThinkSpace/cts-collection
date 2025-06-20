@@ -59,8 +59,8 @@ fun ImageView(
                 drawRoundRect(
                     color = if (isError && uri == null) Color.Red else Color.Gray,
                     style = Stroke(
-                        width = 3f,
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+                        width = 2f,
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(20f, 5f), 0f)
                     ),
                     cornerRadius = CornerRadius(10f)
                 )
@@ -132,12 +132,12 @@ fun ImageView(
                     ) {
                         HorizontalDivider(
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .width(size / 2)
                                 .height(1.dp), color = if (isError) Color.Red else Color.Gray
                         )
                         VerticalDivider(
                             modifier = Modifier
-                                .fillMaxHeight()
+                                .height(size / 2)
                                 .width(1.dp), color = if (isError) Color.Red else Color.Gray
                         )
                     }

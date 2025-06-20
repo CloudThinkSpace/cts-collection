@@ -157,6 +157,13 @@ class FormViewModel:ViewModel() {
             value = "0",
             type = "EmailType"
         ))
+        _fields.add(FormField(
+            id = "16",
+            title = "拍照组件",
+            value = "",
+            type = "ImageType",
+            subTitles = listOf("123","234")
+        ))
     }
 
     fun updateField(updatedField: FormField) {

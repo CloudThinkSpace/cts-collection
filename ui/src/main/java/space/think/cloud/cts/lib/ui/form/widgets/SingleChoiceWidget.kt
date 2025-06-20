@@ -114,7 +114,9 @@ fun SingleChoiceWidget(
                 HorizontalDivider(
                     modifier = Modifier
                         .height(0.5.dp)
-                        .fillMaxWidth(), color = Color.Black
+                        .fillMaxWidth(),
+                    thickness = 0.5.dp,
+                    color = Color.Gray
                 )
             }
         }

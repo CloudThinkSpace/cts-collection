@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import space.think.cloud.cts.lib.ui.form.ImageItem
 import space.think.cloud.cts.lib.ui.form.ImageView
+import space.think.cloud.cts.lib.ui.utils.StringUtil
 import kotlin.math.ceil
 
 /**
@@ -23,10 +24,10 @@ import kotlin.math.ceil
 @Composable
 fun ImageWidget(
     modifier: Modifier = Modifier,
-    value: Map<Int, ImageItem>,
+    value: String,
     size: Dp = 80.dp,
     title: String,
-    subTitles: List<String> = listOf(""),
+    subTitles: List<String>,
     lineMaxNum: Int = 4,
     required: Boolean = false,
     errorMsg: String? = null,
@@ -40,6 +41,9 @@ fun ImageWidget(
 ) {
 
     val localSoftwareKeyboardController = LocalSoftwareKeyboardController.current
+
+    // 解析数据
+    val newValue = StringUtil.jsonToMap<Int, ImageItem>(value)
 
     Widget(
         modifier = modifier,
@@ -71,9 +75,9 @@ fun ImageWidget(
                     ImageView(
                         size = size,
                         title = subTitles[index],
-                        uri = value[index]?.path,
+                        uri = newValue[index]?.path,
                         isError = isError,
-                        loading = value[index]?.loading ?: false,
+                        loading = newValue[index]?.loading ?: false,
                         onDelete = {
                             onDelete?.invoke(index)
                         },

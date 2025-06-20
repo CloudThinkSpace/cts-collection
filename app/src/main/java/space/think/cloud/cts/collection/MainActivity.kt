@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     val viewModel: FormViewModel = viewModel()
-    FormScreen(modifier = modifier, viewModel = viewModel)
+    FormScreen(modifier = modifier, title = "表单界面", viewModel = viewModel)
 }
 
 
