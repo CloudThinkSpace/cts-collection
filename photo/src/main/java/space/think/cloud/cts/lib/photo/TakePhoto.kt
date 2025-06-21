@@ -10,7 +10,7 @@ import androidx.core.content.FileProvider
 import java.io.File
 import java.util.UUID
 
-class TakePhoto : ActivityResultContract<Unit?, PictureResult>() {
+class TakePhoto(private val mediaStoreType: String) : ActivityResultContract<Unit?, PictureResult>() {
 
     private var outUri: Uri? = null
     private var imageName: String? = null
@@ -21,11 +21,11 @@ class TakePhoto : ActivityResultContract<Unit?, PictureResult>() {
     }
 
     private object Helper {
-        val obj = TakePhoto()
+        val obj = TakePhoto(MediaStore.ACTION_IMAGE_CAPTURE)
     }
 
     override fun createIntent(context: Context, input: Unit?): Intent =
-        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
+        Intent(mediaStoreType).also { intent ->
             getFileDirectory(context)?.let {
                 outUri = it
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, it).apply {
