@@ -10,19 +10,11 @@ import androidx.core.content.FileProvider
 import java.io.File
 import java.util.UUID
 
-class TakePhoto(private val mediaStoreType: String) : ActivityResultContract<Unit?, PictureResult>() {
+class TakePhoto(private val mediaStoreType: String) :
+    ActivityResultContract<Unit?, PictureResult>() {
 
     private var outUri: Uri? = null
     private var imageName: String? = null
-
-    companion object {
-        //定义单例的原因是因为拍照返回的时候页面会重新实例takePhoto，导致拍照的uri始终为空
-        val instance get() = Helper.obj
-    }
-
-    private object Helper {
-        val obj = TakePhoto(MediaStore.ACTION_IMAGE_CAPTURE)
-    }
 
     override fun createIntent(context: Context, input: Unit?): Intent =
         Intent(mediaStoreType).also { intent ->
@@ -46,7 +38,8 @@ class TakePhoto(private val mediaStoreType: String) : ActivityResultContract<Uni
         if (!fileFolder.exists()) {
             fileFolder.mkdirs()
         }
-        val file = File(fileFolder, "${imageName}.jpeg")
+        val ext = if (mediaStoreType == MediaStore.ACTION_IMAGE_CAPTURE) "jpeg" else "mp4"
+        val file = File(fileFolder, "${imageName}.${ext}")
         if (!file.exists()) {
             file.createNewFile()
         }

@@ -23,4 +23,5 @@ enum class QuestionType(val type: String) {
     DateType("DateType"),
     EmailType("EmailType"),
     ImageType("ImageType"),
+    VideoType("VideoType"),
 }

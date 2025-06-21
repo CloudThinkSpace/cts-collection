@@ -14,23 +14,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -47,8 +42,8 @@ import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import coil3.video.videoFrameMillis
 import space.think.cloud.cts.lib.photo.PhotoComponent
-import space.think.cloud.cts.lib.ui.CameraBottomSheet
 
 /**
  * ClassName: ImageView
@@ -56,9 +51,8 @@ import space.think.cloud.cts.lib.ui.CameraBottomSheet
  * @date: 2022/10/16 16:32
  * @author: tanghy
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImageView(
+fun VideoView(
     modifier: Modifier = Modifier,
     index: Int,
     uri: String? = null,
@@ -75,11 +69,8 @@ fun ImageView(
 ) {
 
     val mediaAction by remember {
-        mutableStateOf(PhotoComponent(type = PhotoComponent.Type.IMAGE))
+        mutableStateOf(PhotoComponent(type = PhotoComponent.Type.VIDEO))
     }
-
-    val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier.padding(5.dp),
@@ -90,7 +81,7 @@ fun ImageView(
                 .size(size)
                 .clickable {
                     mediaAction.index = index
-                    showBottomSheet = true
+                    mediaAction.takePhoto()
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -123,11 +114,11 @@ fun ImageView(
                     Box(
                         contentAlignment = Alignment.TopEnd
                     ) {
-
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(uri)
                                 .crossfade(true)
+                                .videoFrameMillis(1000)
                                 .build(),
                             contentDescription = "Video thumbnail",
                             contentScale = ContentScale.Crop,
@@ -208,26 +199,5 @@ fun ImageView(
             //权限拒绝的处理
         }
     )
-
-    if (showBottomSheet) {
-        ModalBottomSheet(
-            shape = RoundedCornerShape(topStart = 5.dp, topEnd = 5.dp),
-            onDismissRequest = {
-                showBottomSheet = false
-            },
-            sheetState = sheetState
-        ) {
-            CameraBottomSheet(
-                onCamera = {
-                    showBottomSheet = false
-                    mediaAction.takePhoto()
-                },
-                onSelect = {
-                    showBottomSheet = false
-                    mediaAction.selectImage()
-                }
-            )
-        }
-    }
 
 }

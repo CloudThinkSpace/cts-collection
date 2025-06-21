@@ -2,6 +2,7 @@ package space.think.cloud.cts.lib.photo
 
 import android.Manifest
 import android.os.Build
+import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,19 +24,22 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class PhotoComponent {
+class PhotoComponent(private val type: Type) {
 
     var index: Int = 0
+    private val selectPicture = SelectPicture()
+    private val takePhoto by lazy {
+        if (type == Type.IMAGE) TakePhoto(MediaStore.ACTION_IMAGE_CAPTURE)
+        else TakePhoto(MediaStore.ACTION_VIDEO_CAPTURE)
+    }
 
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    companion object {
-        val instance get() = Helper.obj
+    enum class Type {
+        IMAGE,
+        VIDEO,
     }
 
-    private object Helper {
-        val obj = PhotoComponent()
-    }
 
     //监听拍照权限flow
     private val checkCameraPermission =
@@ -71,10 +75,10 @@ class PhotoComponent {
     ) {
         val rememberGraphCallback = rememberUpdatedState(newValue = graphCallback)
         val rememberGalleryCallback = rememberUpdatedState(newValue = galleryCallback)
-        val openGalleryLauncher = rememberLauncherForActivityResult(contract = SelectPicture()) {
+        val openGalleryLauncher = rememberLauncherForActivityResult(contract = selectPicture) {
             rememberGalleryCallback.value.invoke(it)
         }
-        val takePhotoLauncher = rememberLauncherForActivityResult(contract = TakePhoto.instance) {
+        val takePhotoLauncher = rememberLauncherForActivityResult(contract = takePhoto) {
             rememberGraphCallback.value.invoke(it)
         }
         val readGalleryPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -91,6 +95,7 @@ class PhotoComponent {
         )
         val galleryPermissionState = rememberPermissionState(readGalleryPermission)
         val cameraPermissionState = rememberMultiplePermissionsState(permissionList)
+
         LaunchedEffect(Unit) {
             checkCameraPermission.collectLatest {
                 permissionCameraState = it == true
@@ -107,6 +112,7 @@ class PhotoComponent {
                 }
             }
         }
+
         LaunchedEffect(Unit) {
             checkGalleryImagePermission.collectLatest {
                 permissionGalleryState = it == true
@@ -123,12 +129,14 @@ class PhotoComponent {
                 }
             }
         }
+
         LaunchedEffect(cameraPermissionState.allPermissionsGranted) {
             if (cameraPermissionState.allPermissionsGranted && permissionCameraState) {
                 setCheckCameraPermissionState(null)
                 takePhotoLauncher.launch(null)
             }
         }
+
         LaunchedEffect(galleryPermissionState.status.isGranted) {
             if (galleryPermissionState.status.isGranted && permissionGalleryState) {
                 setCheckGalleryPermissionState(null)
@@ -146,5 +154,6 @@ class PhotoComponent {
     fun takePhoto() {
         setCheckCameraPermissionState(true)
     }
+
 
 }

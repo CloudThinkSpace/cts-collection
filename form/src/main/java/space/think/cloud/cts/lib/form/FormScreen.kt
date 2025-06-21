@@ -38,6 +38,7 @@ import space.think.cloud.cts.lib.ui.form.widgets.RadioWidget
 import space.think.cloud.cts.lib.ui.form.widgets.SectionWidget
 import space.think.cloud.cts.lib.ui.form.widgets.SingleChoiceWidget
 import space.think.cloud.cts.lib.ui.form.widgets.TextWidget
+import space.think.cloud.cts.lib.ui.form.widgets.VideoWidget
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -366,6 +367,23 @@ fun FormScreen(
 
                     QuestionType.ImageType.type -> {
                         ImageWidget(
+                            value = localField.value,
+                            title = localField.title,
+                            errorMsg = localField.error,
+                            required = localField.required,
+                            isError = localField.error?.isNotEmpty() == true,
+                            enabled = localField.enabled,
+                            subTitles = localField.subTitles ?: listOf(),
+                            description = localField.description,
+                        ) { newValue ->
+                            val updated = localField.copy(value = newValue)
+                            localField = updated
+                            viewModel.updateField(updated)
+                        }
+                    }
+
+                    QuestionType.VideoType.type -> {
+                        VideoWidget(
                             value = localField.value,
                             title = localField.title,
                             errorMsg = localField.error,
