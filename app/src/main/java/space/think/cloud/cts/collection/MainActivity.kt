@@ -40,16 +40,16 @@ class MainActivity : ComponentActivity() {
                 val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bg)
                 // 准备表格数据
                 val tableData = arrayOf(
-                    arrayOf("名称", "日期"),
-                    arrayOf("项目A", "名称，日期阿斯顿发阿斯顿发阿斯顿发发生的发生的阿斯顿发送到发阿斯顿发送到发阿斯顿发送"),
-                    arrayOf("项目B", "2023-08-02"),
-                    arrayOf("项目C", "2023-08-03")
+                    arrayOf("名  称:", "日期"),
+                    arrayOf("项目A:", "名称，日期阿斯顿发阿斯顿发阿斯顿发发生的发生的阿斯顿发送到发阿斯顿发送到发阿斯顿发送"),
+                    arrayOf("项目B:", "2023-08-02"),
+                    arrayOf("项目C:", "2023-08-03")
                 )
                 val aa = Watermark.addStyledTableWatermark(
                     bitmap,
                     tableData,
                     headerTitle = "实施日志",
-                    padding = Padding(50f),
+                    padding = Padding(150f),
                     cellPadding = Padding(50f, 30f)
                 )
                 Image(

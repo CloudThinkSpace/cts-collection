@@ -7,31 +7,37 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
-import kotlin.math.max
 import androidx.core.graphics.withRotation
 import kotlin.math.ceil
+import kotlin.math.max
+
 
 object Watermark {
 
     fun addStyledTableWatermark(
         originalBitmap: Bitmap,
         tableData: Array<Array<String>>,
-        maxLineLength: Int = 15, // 每行最大字符数
+        maxLineLength: Int = 20, // 每行最大字符数
         lineSpace: Float = 20f,
         textColor: Int = Color.WHITE,
-        textSize: Float = 50f,
+        textSize: Float = 60f,
         headerTitle: String? = null,
         headerColor: Int = Color.argb(200, 0, 0, 255),
-        headerTextSize: Float = 56f,
+        headerTextSize: Float = 86f,
+        headerTextColor: Int = Color.WHITE,
+        headerPadding: Padding = Padding(10f, 50f),
         cellColor: Int = Color.argb(150, 0, 0, 0),
         borderColor: Int = Color.WHITE,
         borderWidth: Float = 2f,
         padding: Padding = Padding(20f),
         cellPadding: Padding = Padding(10f),
         position: Position = LeftBottom,
+        shape: RoundedCornerShape = RoundedCornerShape(20f),
         rotation: Float = 0f // 旋转角度
     ): Bitmap {
+        // 创建图像副本
         val mutableBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true)
+        // 添加画布
         val canvas = Canvas(mutableBitmap)
 
         // 设置文字画笔
@@ -41,9 +47,10 @@ object Watermark {
             this.isAntiAlias = true
             this.textAlign = Paint.Align.LEFT
         }
+
         // 设置header文字画笔
         val headerPaint = Paint().apply {
-            this.color = textColor
+            this.color = headerTextColor
             this.textSize = headerTextSize
             this.typeface = Typeface.DEFAULT_BOLD
         }
@@ -51,50 +58,57 @@ object Watermark {
         // 计算表格尺寸
         val rows = tableData.size
         val cols = tableData[0].size
+        // 单元宽度
         val cellWidths = FloatArray(cols)
-        val rowHeights = FloatArray(rows + 1)
+        // 行高
+        val rowHeights = FloatArray(rows)
+
+        // 矩形
         val textBounds = Rect()
 
         // 表头宽度和高度
         var headerWidth = 0f
         var headerHeight = 0f
 
+        // 判断标题是否为空
         if (headerTitle != null) {
+            // 获取字符串的范围
             headerPaint.getTextBounds(headerTitle, 0, headerTitle.length, textBounds)
-            headerWidth = headerPaint.measureText(headerTitle) + cellPadding.horizontal
-            headerHeight = textBounds.height() + cellPadding.vertical * 2
+            // 计算表头的宽高
+            headerWidth = headerPaint.measureText(headerTitle) + headerPadding.horizontal
+            headerHeight = textBounds.height() + headerPadding.vertical * 2
         }
 
         // 预计算单元格尺寸
         for (i in 0 until rows) {
             for (j in 0 until cols) {
                 // 当前字符内容
-                val currentContent = tableData[i][j]
+                val cellContent = tableData[i][j]
                 // 判断当前内容是否过长
-                if (currentContent.length <= maxLineLength) {
-                    textPaint.getTextBounds(currentContent, 0, currentContent.length, textBounds)
+                if (cellContent.length <= maxLineLength) {
+                    textPaint.getTextBounds(cellContent, 0, cellContent.length, textBounds)
                     cellWidths[j] =
                         max(
                             cellWidths[j],
-                            textPaint.measureText(currentContent) + cellPadding.horizontal * 2
+                            textPaint.measureText(cellContent) + cellPadding.horizontal * 2
                         )
                     rowHeights[i] =
                         max(rowHeights[i], textBounds.height().toFloat() + cellPadding.vertical * 2)
                 } else {
                     // 计算字符串可以分多少行
-                    val lines = ceil(currentContent.length / maxLineLength.toFloat()).toInt()
+                    val lines = ceil(cellContent.length / maxLineLength.toFloat()).toInt()
                     var lineMaxWidth = 0f
                     var lineMaxHeight = 0f
                     for (k in 0 until lines) {
 
                         val line =
-                            if ((k + 1) * maxLineLength < currentContent.length) currentContent.substring(
+                            if ((k + 1) * maxLineLength < cellContent.length) cellContent.substring(
                                 k * maxLineLength,
                                 (k + 1) * maxLineLength
                             )
-                            else currentContent.substring(
+                            else cellContent.substring(
                                 k * maxLineLength,
-                                currentContent.length - 1
+                                cellContent.length
                             )
 
                         textPaint.getTextBounds(
@@ -121,7 +135,7 @@ object Watermark {
 
         // 计算表格位置
         val currentPosition =
-            calculatingPosition(originalBitmap, padding, position, tableWidth, tableHeight)
+            calculatingTablePosition(originalBitmap, padding, position, tableWidth, tableHeight)
         val tableLeft = currentPosition.first
         val tableTop = currentPosition.second
 
@@ -153,8 +167,17 @@ object Watermark {
                     currentTop + headerHeight
                 )
 
-                drawRect(headerRect, cellPaint)
-                drawRect(headerRect, borderPaint)
+                val headerShape = shape.copy(bottomStart = 0f, bottomEnd = 0f)
+                // 画圆角头
+                headerShape.draw(canvas, headerColor, headerRect, borderWidth = borderWidth)
+                // 画圆角头边界
+                headerShape.draw(
+                    canvas,
+                    borderColor,
+                    headerRect,
+                    borderWidth = borderWidth,
+                    style = Paint.Style.STROKE
+                )
                 // 表头位置
                 val headerX = tableLeft + tableWidth / 2 - headerWidth / 2
                 val headerY =
@@ -185,8 +208,32 @@ object Watermark {
                         currentTop + rowHeights[i]
                     )
 
-                    drawRect(cellRect, cellPaint)
-                    drawRect(cellRect, borderPaint)
+                    if (i == rows - 1 && j == 0) {
+                        // 左下角圆角
+                        val leftShape = shape.copy(topStart = 0f, topEnd = 0f, bottomEnd = 0f)
+                        leftShape.draw(canvas, cellColor, cellRect)
+                        leftShape.draw(
+                            canvas,
+                            borderColor,
+                            cellRect,
+                            borderWidth = borderWidth,
+                            style = Paint.Style.STROKE
+                        )
+                    } else if ((i == rows - 1 && j == cols - 1)) {
+                        // 右下角圆角
+                        val rightShape = shape.copy(topStart = 0f, topEnd = 0f, bottomStart = 0f)
+                        rightShape.draw(canvas, cellColor, cellRect)
+                        rightShape.draw(
+                            canvas,
+                            borderColor,
+                            cellRect,
+                            borderWidth = borderWidth,
+                            style = Paint.Style.STROKE
+                        )
+                    } else {
+                        drawRect(cellRect, cellPaint)
+                        drawRect(cellRect, borderPaint)
+                    }
 
                     // 绘制文字
                     val textX = currentLeft + cellPadding.horizontal
@@ -217,6 +264,12 @@ object Watermark {
                                     rowHeight * k +
                                     rowHeight * 1 / 2 -
                                     fontHeight / 2 + cellPadding.vertical + k * lineSpace
+                        // 判断是否为第一列
+                        if (j == 0) {
+                            textPaint.typeface = Typeface.DEFAULT_BOLD
+                        } else {
+                            textPaint.typeface = Typeface.DEFAULT
+                        }
                         // 绘制文字
                         drawText(line, textX, textY, textPaint)
                     }
@@ -230,7 +283,7 @@ object Watermark {
         return mutableBitmap
     }
 
-    private fun calculatingPosition(
+    private fun calculatingTablePosition(
         originalBitmap: Bitmap,
         padding: Padding,
         position: Position,
@@ -298,19 +351,3 @@ object Watermark {
 
     }
 }
-
-class Padding(val horizontal: Float, val vertical: Float) {
-    constructor(size: Float) : this(horizontal = size, vertical = size)
-}
-
-sealed class Position
-data object LeftTop : Position()
-data object RightTop : Position()
-data object LeftBottom : Position()
-data object RightBottom : Position()
-data object TopCenter : Position()
-data object BottomCenter : Position()
-data object LeftCenter : Position()
-data object RightCenter : Position()
-data object Center : Position()
-data class CustomPosition(val x: Float, val y: Float) : Position()
