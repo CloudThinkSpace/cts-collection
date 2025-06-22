@@ -57,6 +57,7 @@ dependencies {
     implementation(project(":ui"))
     implementation(project(":network"))
     implementation(project(":form"))
+    implementation(project(":waterMask"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
