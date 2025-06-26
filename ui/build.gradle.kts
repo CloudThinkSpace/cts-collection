@@ -51,7 +51,7 @@ dependencies {
     implementation(libs.androidx.material.icons)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.material3.navigation3)
+//    implementation(libs.androidx.material3.navigation3)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.coil.video)

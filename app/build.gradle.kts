@@ -52,7 +52,7 @@ dependencies {
     implementation(libs.androidx.material.icons)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.androidx.material3.navigation3)
+//    implementation(libs.androidx.material3.navigation3)
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(project(":ui"))
     implementation(project(":network"))

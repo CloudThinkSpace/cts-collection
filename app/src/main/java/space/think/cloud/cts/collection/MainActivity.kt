@@ -20,6 +20,7 @@ import space.think.cloud.cts.collection.ui.theme.CtsCollectionTheme
 import space.think.cloud.cts.lib.form.FormScreen
 import space.think.cloud.cts.lib.form.viewmodel.FormViewModel
 import space.think.cloud.cts.lib.ui.CircleText
+import space.think.cloud.cts.lib.watermask.Margin
 import space.think.cloud.cts.lib.watermask.Padding
 import space.think.cloud.cts.lib.watermask.Watermark
 
@@ -39,18 +40,23 @@ class MainActivity : ComponentActivity() {
                 val context = LocalContext.current
                 val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bg)
                 // 准备表格数据
-                val tableData = arrayOf(
-                    arrayOf("名  称:", "日期"),
-                    arrayOf("项目A:", "名称，日期阿斯顿发阿斯顿发阿斯顿发发生的发生的阿斯顿发送到发阿斯顿发送到发阿斯顿发送"),
-                    arrayOf("项目B:", "2023-08-02"),
-                    arrayOf("项目C:", "2023-08-03")
+                val tableData = listOf(
+                    listOf("名  称:", "1"),
+                    listOf(
+                        "项目A:",
+                        "1"
+                    ),
+                    listOf("项目B:", "1"),
+                    listOf("项目C:", "1")
                 )
-                val aa = Watermark.addStyledTableWatermark(
-                    bitmap,
+                val aa = Watermark(
                     tableData,
                     headerTitle = "实施日志",
-                    padding = Padding(150f),
-                    cellPadding = Padding(50f, 30f)
+                    margin = Margin(150f),
+                    textVerticalCenter = true,
+                    cellPadding = Padding(30f, 10f)
+                ).draw(
+                    bitmap,
                 )
                 Image(
                     aa.asImageBitmap(),
