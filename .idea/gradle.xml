@@ -16,7 +16,7 @@
             <option value="$PROJECT_DIR$/network" />
             <option value="$PROJECT_DIR$/photo" />
             <option value="$PROJECT_DIR$/ui" />
-            <option value="$PROJECT_DIR$/waterMask" />
+            <option value="$PROJECT_DIR$/watermark" />
           </set>
         </option>
       </GradleProjectSettings>

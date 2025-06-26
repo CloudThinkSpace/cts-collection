@@ -20,9 +20,9 @@ import space.think.cloud.cts.collection.ui.theme.CtsCollectionTheme
 import space.think.cloud.cts.lib.form.FormScreen
 import space.think.cloud.cts.lib.form.viewmodel.FormViewModel
 import space.think.cloud.cts.lib.ui.CircleText
-import space.think.cloud.cts.lib.watermask.Margin
-import space.think.cloud.cts.lib.watermask.Padding
-import space.think.cloud.cts.lib.watermask.Watermark
+import space.think.cloud.cts.lib.watermark.Margin
+import space.think.cloud.cts.lib.watermark.Padding
+import space.think.cloud.cts.lib.watermark.Watermark
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("LocalContextResourcesRead")
