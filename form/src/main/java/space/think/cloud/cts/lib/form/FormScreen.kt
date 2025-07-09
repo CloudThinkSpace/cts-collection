@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.SaveAs
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -78,7 +78,7 @@ fun FormScreen(
                 actions = {
                     IconButton(onClick = { /* do something */ }) {
                         Icon(
-                            imageVector = Icons.Filled.Menu,
+                            imageVector = Icons.Filled.SaveAs,
                             contentDescription = "Localized description"
                         )
                     }
@@ -106,7 +106,7 @@ fun FormScreen(
                 when (localField.type) {
                     QuestionType.TextType.type -> {
                         TextWidget(
-                            value = localField.value,
+                            value = localField.getCurrentValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,

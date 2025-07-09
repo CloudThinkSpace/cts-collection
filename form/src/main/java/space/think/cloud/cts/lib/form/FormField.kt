@@ -10,7 +10,7 @@ data class FormField(
     val type: String,
 
     // 值
-    var value: String,
+    var value: String = "",
 
     // 标题
     val title: String,
@@ -34,7 +34,7 @@ data class FormField(
     val description: String? = null,
 
     // 默认值
-    val defaultValue: Any? = null,
+    val defaultValue: String? = null,
 
     // 最大行数
     val lineMaxNum: Int? = null,
@@ -47,4 +47,12 @@ data class FormField(
 
     // 默认显示值
     val placeholder: String = "",
-)
+){
+    fun getCurrentValue(): String{
+        return if (value.isEmpty() && defaultValue != null){
+            defaultValue
+        }else{
+            value
+        }
+    }
+}

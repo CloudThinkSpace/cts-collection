@@ -47,7 +47,7 @@ import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import space.think.cloud.cts.lib.photo.PhotoComponent
+import space.think.cloud.cts.lib.photo.PhotoController
 import space.think.cloud.cts.lib.ui.CameraBottomSheet
 
 /**
@@ -69,13 +69,14 @@ fun ImageView(
     isError: Boolean = false,
     fontSize: TextUnit = 10.sp,
     color: Color = Color.Unspecified,
+    onClick: (() -> Unit)? = null,
     onPreview: ((Uri) -> Unit)? = null,
     onDelete: ((Int) -> Unit)? = null,
-    onChangeValue: (Int, String?) -> Unit,
+    onChangeValue: (String?) -> Unit,
 ) {
 
     val mediaAction by remember {
-        mutableStateOf(PhotoComponent(type = PhotoComponent.Type.IMAGE))
+        mutableStateOf(PhotoController(type = PhotoController.Type.IMAGE))
     }
 
     val sheetState = rememberModalBottomSheetState()
@@ -89,7 +90,7 @@ fun ImageView(
             modifier = Modifier
                 .size(size)
                 .clickable {
-                    mediaAction.index = index
+                    onClick?.invoke()
                     showBottomSheet = true
                 },
             contentAlignment = Alignment.Center
@@ -195,13 +196,13 @@ fun ImageView(
     mediaAction.Register(
         galleryCallback = {
             if (it.isSuccess) {
-                onChangeValue(mediaAction.index, it.uri?.toString())
+                onChangeValue( it.uri?.toString())
 
             }
         },
         graphCallback = {
             if (it.isSuccess) {
-                onChangeValue(mediaAction.index, it.uri?.toString())
+                onChangeValue(it.uri?.toString())
             }
         },
         permissionRationale = {

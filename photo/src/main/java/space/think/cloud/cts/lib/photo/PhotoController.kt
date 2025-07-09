@@ -24,15 +24,16 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class PhotoComponent(private val type: Type) {
+class PhotoController(private val type: Type) {
 
-    var index: Int = 0
+    // 照片选择器
     private val selectPicture = SelectPicture()
+    // 拍照或者录像
     private val takePhoto by lazy {
         if (type == Type.IMAGE) TakePhoto(MediaStore.ACTION_IMAGE_CAPTURE)
         else TakePhoto(MediaStore.ACTION_VIDEO_CAPTURE)
     }
-
+    // 线程对象
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     enum class Type {

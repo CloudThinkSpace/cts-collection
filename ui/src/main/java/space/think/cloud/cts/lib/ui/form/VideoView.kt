@@ -43,7 +43,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.video.videoFrameMillis
-import space.think.cloud.cts.lib.photo.PhotoComponent
+import space.think.cloud.cts.lib.photo.PhotoController
 
 /**
  * ClassName: ImageView
@@ -63,13 +63,14 @@ fun VideoView(
     isError: Boolean = false,
     fontSize: TextUnit = 10.sp,
     color: Color = Color.Unspecified,
+    onClick: (() -> Unit)? = null,
     onPreview: ((Uri) -> Unit)? = null,
     onDelete: ((Int) -> Unit)? = null,
-    onChangeValue: (Int, String?) -> Unit,
+    onChangeValue: (String?) -> Unit,
 ) {
 
     val mediaAction by remember {
-        mutableStateOf(PhotoComponent(type = PhotoComponent.Type.VIDEO))
+        mutableStateOf(PhotoController(type = PhotoController.Type.VIDEO))
     }
 
     Column(
@@ -80,7 +81,7 @@ fun VideoView(
             modifier = Modifier
                 .size(size)
                 .clickable {
-                    mediaAction.index = index
+                    onClick?.invoke()
                     mediaAction.takePhoto()
                 },
             contentAlignment = Alignment.Center
@@ -186,13 +187,13 @@ fun VideoView(
     mediaAction.Register(
         galleryCallback = {
             if (it.isSuccess) {
-                onChangeValue(mediaAction.index, it.uri?.toString())
+                onChangeValue(it.uri?.toString())
 
             }
         },
         graphCallback = {
             if (it.isSuccess) {
-                onChangeValue(mediaAction.index, it.uri?.toString())
+                onChangeValue(it.uri?.toString())
             }
         },
         permissionRationale = {

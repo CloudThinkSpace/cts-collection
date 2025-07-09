@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -33,35 +34,35 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CtsCollectionTheme {
-//                Greeting(
-//                    name = "Android",
-//                    modifier = Modifier.fillMaxSize()
+                Greeting(
+                    name = "Android",
+                    modifier = Modifier.fillMaxSize()
+                )
+//                val context = LocalContext.current
+//                val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bg)
+//                // 准备表格数据
+//                val tableData = listOf(
+//                    listOf("名  称:", "1"),
+//                    listOf(
+//                        "项目A:",
+//                        "1"
+//                    ),
+//                    listOf("项目B:", "1"),
+//                    listOf("项目C:", "1")
 //                )
-                val context = LocalContext.current
-                val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bg)
-                // 准备表格数据
-                val tableData = listOf(
-                    listOf("名  称:", "1"),
-                    listOf(
-                        "项目A:",
-                        "1"
-                    ),
-                    listOf("项目B:", "1"),
-                    listOf("项目C:", "1")
-                )
-                val aa = Watermark(
-                    tableData,
-                    headerTitle = "实施日志",
-                    margin = Margin(150f),
-                    textVerticalCenter = true,
-                    cellPadding = Padding(30f, 10f)
-                ).draw(
-                    bitmap,
-                )
-                Image(
-                    aa.asImageBitmap(),
-                    contentDescription = null
-                )
+//                val aa = Watermark(
+//                    tableData,
+//                    headerTitle = "实施日志",
+//                    margin = Margin(150f),
+//                    textVerticalCenter = true,
+//                    cellPadding = Padding(30f, 10f)
+//                ).draw(
+//                    bitmap,
+//                )
+//                Image(
+//                    aa.asImageBitmap(),
+//                    contentDescription = null
+//                )
             }
         }
     }

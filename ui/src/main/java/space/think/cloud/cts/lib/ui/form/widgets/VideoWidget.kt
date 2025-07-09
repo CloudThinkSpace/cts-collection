@@ -60,6 +60,10 @@ fun VideoWidget(
     var currentImageIndex by remember {
         mutableIntStateOf(0)
     }
+    // 选择的位置
+    var selectIndex by remember {
+        mutableIntStateOf(0)
+    }
 
     Widget(
         modifier = modifier,
@@ -95,7 +99,10 @@ fun VideoWidget(
                         title = subTitles[index],
                         uri = newValue[index]?.path,
                         isError = isError,
-                        loading = newValue[index]?.loading ?: false,
+                        loading = newValue[index]?.loading == true,
+                        onClick = {
+                            selectIndex = index
+                        },
                         onDelete = {
                             if (enabled) {
                                 isOpenDelete = true
@@ -103,11 +110,11 @@ fun VideoWidget(
                             }
                         },
                         onPreview = onPreview
-                    ) { idx, path ->
+                    ) {  path ->
                         localSoftwareKeyboardController?.hide()
                         if (enabled) {
                             val temp = newValue.toMutableMap()
-                            temp[idx] = ImageItem(name = subTitles[idx], path = path)
+                            temp[selectIndex] = ImageItem(name = subTitles[selectIndex], path = path)
                             val json = StringUtil.mapToString(temp)
                             onChangeValue(json)
                         }
