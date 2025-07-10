@@ -1,6 +1,7 @@
 package space.think.cloud.cts.collection
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,6 +11,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -17,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import space.think.cloud.cts.collection.ui.theme.CtsCollectionTheme
 import space.think.cloud.cts.lib.form.FormScreen
 import space.think.cloud.cts.lib.form.viewmodel.FormViewModel
@@ -39,7 +47,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()
                 )
 //                val context = LocalContext.current
-//                val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.bg)
+//                var bitmap by remember {
+//                    mutableStateOf<Bitmap?>(null)
+//                }
 //                // 准备表格数据
 //                val tableData = listOf(
 //                    listOf("名  称:", "1"),
@@ -50,19 +60,30 @@ class MainActivity : ComponentActivity() {
 //                    listOf("项目B:", "1"),
 //                    listOf("项目C:", "1")
 //                )
-//                val aa = Watermark(
-//                    tableData,
-//                    headerTitle = "实施日志",
-//                    margin = Margin(150f),
-//                    textVerticalCenter = true,
-//                    cellPadding = Padding(30f, 10f)
-//                ).draw(
-//                    bitmap,
-//                )
-//                Image(
-//                    aa.asImageBitmap(),
-//                    contentDescription = null
-//                )
+//                val scope = rememberCoroutineScope()
+//                LaunchedEffect(Unit) {
+//                    scope.launch {
+//                        bitmap = Watermark(
+//                            originalBitmap = BitmapFactory.decodeResource(
+//                                context.resources,
+//                                R.drawable.bg
+//                            ),
+//                            tableData = tableData,
+//                            headerTitle = "实施日志",
+//                            margin = Margin(150f),
+//                            textVerticalCenter = true,
+//                            cellPadding = Padding(30f, 10f)
+//                        ).draw()
+//                    }
+//                }
+//
+//                bitmap?.apply {
+//                    Image(
+//                        this.asImageBitmap(),
+//                        contentDescription = null
+//                    )
+//                }
+
             }
         }
     }

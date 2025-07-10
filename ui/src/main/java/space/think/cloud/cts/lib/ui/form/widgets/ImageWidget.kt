@@ -13,15 +13,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import kotlinx.coroutines.launch
 import space.think.cloud.cts.lib.ui.form.ImageItem
 import space.think.cloud.cts.lib.ui.form.ImageView
+import space.think.cloud.cts.lib.ui.utils.DateUtil
+import space.think.cloud.cts.lib.ui.utils.ImageUtil
 import space.think.cloud.cts.lib.ui.utils.StringUtil
+import java.util.Date
 import kotlin.math.ceil
 
 /**
@@ -65,6 +72,15 @@ fun ImageWidget(
         mutableIntStateOf(0)
     }
 
+    val scope = rememberCoroutineScope()
+
+    val context = LocalContext.current
+
+    // 加载中
+    var loading by remember {
+        mutableStateOf(false)
+    }
+
     Widget(
         modifier = modifier,
         title = title,
@@ -91,15 +107,13 @@ fun ImageWidget(
                 repeat(rowNum) {
                     // 当前图片位置
                     val index = it + i * lineMaxNum
-
                     // 当前位置的图片是否存在
                     ImageView(
-                        index = index,
                         size = size,
                         title = subTitles[index],
                         uri = newValue[index]?.path,
                         isError = isError,
-                        loading = newValue[index]?.loading == true,
+                        loading = selectIndex == index && loading,
                         onClick = {
                             selectIndex = index
                         },
@@ -112,13 +126,41 @@ fun ImageWidget(
                         onPreview = onPreview
                     ) { path ->
                         localSoftwareKeyboardController?.hide()
-                        if (enabled) {
-                            val temp = newValue.toMutableMap()
-                            temp[selectIndex] =
-                                ImageItem(name = subTitles[selectIndex], path = path)
-                            val json = StringUtil.mapToString(temp)
-                            onChangeValue(json)
+                        loading = true
+                        path?.let {
+                            // 处理图片，添加水印
+                            scope.launch {
+                                // 准备表格数据
+                                val tableData = listOf(
+                                    listOf("经度:", "1"),
+                                    listOf("纬度:", "1"),
+                                    listOf("地址:", "1"),
+                                    listOf(
+                                        "时间:",
+                                        DateUtil.dateToString(Date(), "yyyy年MM月dd日 HH:mm:ss")
+                                    )
+                                )
+
+                                // 加水印并保存图片
+                                ImageUtil.printWatermark(
+                                    context,
+                                    tableData = tableData,
+                                    uri = path.toUri()
+                                ) {
+                                    // 更新图片
+                                    val temp = newValue.toMutableMap()
+                                    temp[selectIndex] =
+                                        ImageItem(
+                                            name = subTitles[selectIndex],
+                                            path = it.toString()
+                                        )
+                                    val json = StringUtil.mapToString(temp)
+                                    onChangeValue(json)
+                                    loading = false
+                                }
+                            }
                         }
+
 
                     }
                 }

@@ -43,6 +43,6 @@ class TakePhoto(private val mediaStoreType: String) :
         if (!file.exists()) {
             file.createNewFile()
         }
-        return FileProvider.getUriForFile(context, "${context.packageName}.image.provider", file)
+        return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
     }
 }

@@ -60,7 +60,6 @@ import space.think.cloud.cts.lib.ui.CameraBottomSheet
 @Composable
 fun ImageView(
     modifier: Modifier = Modifier,
-    index: Int,
     uri: String? = null,
     title: String? = null,
     size: Dp = 80.dp,
@@ -71,7 +70,7 @@ fun ImageView(
     color: Color = Color.Unspecified,
     onClick: (() -> Unit)? = null,
     onPreview: ((Uri) -> Unit)? = null,
-    onDelete: ((Int) -> Unit)? = null,
+    onDelete: (() -> Unit)? = null,
     onChangeValue: (String?) -> Unit,
 ) {
 
@@ -147,7 +146,7 @@ fun ImageView(
                                     y = (-20).dp
                                 ),
                                 onClick = {
-                                    onDelete?.invoke(index)
+                                    onDelete?.invoke()
                                 }) {
                                 Icon(
                                     Icons.Default.Close,

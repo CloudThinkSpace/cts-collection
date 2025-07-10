@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.google.gson)
     implementation(project(":network"))
     implementation(project(":photo"))
+    implementation(project(":watermark"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

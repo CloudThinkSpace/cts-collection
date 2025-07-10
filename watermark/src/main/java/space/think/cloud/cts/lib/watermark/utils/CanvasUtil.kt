@@ -32,25 +32,11 @@ object CanvasUtil {
         // 行高
         val textHeight = fontMetrics.descent - fontMetrics.ascent
         // 遍历多行文字
-        for (k in 0 until lines) {
-            // 计算字符串的总长度
-            val contentLength = content.length
-            // 每行字符串
-            val lineStr =
-                if ((k + 1) * maxLength < contentLength)
-                    content.substring(
-                        k * maxLength,
-                        (k + 1) * maxLength
-                    )
-                else content.substring(
-                    k * maxLength,
-                    contentLength
-                )
-
+        for (line in lines) {
             // 行宽
             rectangle.width = max(
                 rectangle.width,
-                textPaint.measureText(lineStr) + padding.left + padding.right
+                textPaint.measureText(line) + padding.left + padding.right
             )
             rectangle.height += textHeight + lineSpace + padding.top + padding.bottom
         }
