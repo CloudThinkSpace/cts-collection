@@ -25,7 +25,7 @@ object UriUtil {
     fun fromFilePath(context: Context, filePath: String): Uri? {
         return try {
             val file = File(filePath)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 FileProvider.getUriForFile(
                     context,
                     "${context.packageName}.fileprovider",

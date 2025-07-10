@@ -1,5 +1,6 @@
 package space.think.cloud.cts.lib.form
 
+import android.content.Intent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import space.think.cloud.cts.lib.form.viewmodel.FormViewModel
 import space.think.cloud.cts.lib.ui.form.widgets.CheckWidget
@@ -51,6 +53,7 @@ fun FormScreen(
 
     val fields by remember { derivedStateOf { viewModel.fields } }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val context = LocalContext.current
 
     Scaffold(
         modifier = modifier,
@@ -375,6 +378,12 @@ fun FormScreen(
                             enabled = localField.enabled,
                             subTitles = localField.subTitles ?: listOf(),
                             description = localField.description,
+                            onPreview = {
+                                val intent = Intent(context, ImagePreviewActivity::class.java).apply {
+                                    putStringArrayListExtra("uris", ArrayList(listOf<String>(it.toString())))
+                                }
+                                context.startActivity(intent)
+                            }
                         ) { newValue ->
                             val updated = localField.copy(value = newValue)
                             localField = updated
