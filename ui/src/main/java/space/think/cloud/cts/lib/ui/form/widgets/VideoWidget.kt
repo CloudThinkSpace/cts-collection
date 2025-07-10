@@ -19,9 +19,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import space.think.cloud.cts.lib.ui.form.ImageItem
+import androidx.core.net.toUri
+import space.think.cloud.cts.lib.ui.form.MediaItem
 import space.think.cloud.cts.lib.ui.form.VideoView
-import space.think.cloud.cts.lib.ui.utils.StringUtil
 import kotlin.math.ceil
 
 /**
@@ -34,7 +34,7 @@ import kotlin.math.ceil
 @Composable
 fun VideoWidget(
     modifier: Modifier = Modifier,
-    value: String,
+    value: Map<Int, MediaItem>,
     size: Dp = 80.dp,
     title: String,
     subTitles: List<String>,
@@ -46,12 +46,10 @@ fun VideoWidget(
     enabled: Boolean = true,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onPreview: ((Uri) -> Unit)? = null,
-    onChangeValue: (String) -> Unit,
+    onChangeValue: (Map<Int, MediaItem>) -> Unit,
 ) {
 
     val localSoftwareKeyboardController = LocalSoftwareKeyboardController.current
-    // 解析数据
-    val newValue = StringUtil.jsonToMap(value)
     // 是否显示删除图片Dalog
     var isOpenDelete by remember {
         mutableStateOf(false)
@@ -97,9 +95,9 @@ fun VideoWidget(
                         index = index,
                         size = size,
                         title = subTitles[index],
-                        uri = newValue[index]?.path,
+                        uri = value[index]?.path?.toUri(),
                         isError = isError,
-                        loading = newValue[index]?.loading == true,
+                        loading = value[index]?.loading == true,
                         onClick = {
                             selectIndex = index
                         },
@@ -113,10 +111,9 @@ fun VideoWidget(
                     ) {  path ->
                         localSoftwareKeyboardController?.hide()
                         if (enabled) {
-                            val temp = newValue.toMutableMap()
-                            temp[selectIndex] = ImageItem(name = subTitles[selectIndex], path = path)
-                            val json = StringUtil.mapToString(temp)
-                            onChangeValue(json)
+                            val temp = value.toMutableMap()
+                            temp[selectIndex] = MediaItem(name = subTitles[selectIndex], path = path)
+                            onChangeValue(temp.toMap())
                         }
 
                     }
@@ -136,10 +133,9 @@ fun VideoWidget(
         confirmButton = {
             TextButton(onClick = {
                 isOpenDelete = false
-                val temp = newValue.toMutableMap()
+                val temp = value.toMutableMap()
                 temp.remove(currentImageIndex)
-                val json = StringUtil.mapToString(temp)
-                onChangeValue(json)
+                onChangeValue(temp.toMap())
 
             }) {
                 Text(text = "确定")

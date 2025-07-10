@@ -6,7 +6,7 @@ package space.think.cloud.cts.lib.ui.form
  * @date: 2022/10/16 15:57
  * @author: tanghy
  */
-data class ImageItem(
+data class MediaItem(
     val name: String,
     var loading: Boolean = false,
     var path: String? = null,

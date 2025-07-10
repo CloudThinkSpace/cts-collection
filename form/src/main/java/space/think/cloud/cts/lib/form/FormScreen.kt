@@ -41,6 +41,7 @@ import space.think.cloud.cts.lib.ui.form.widgets.SectionWidget
 import space.think.cloud.cts.lib.ui.form.widgets.SingleChoiceWidget
 import space.think.cloud.cts.lib.ui.form.widgets.TextWidget
 import space.think.cloud.cts.lib.ui.form.widgets.VideoWidget
+import space.think.cloud.cts.lib.ui.utils.StringUtil
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,7 +110,7 @@ fun FormScreen(
                 when (localField.type) {
                     QuestionType.TextType.type -> {
                         TextWidget(
-                            value = localField.getCurrentValue(),
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -126,7 +127,7 @@ fun FormScreen(
 
                     QuestionType.UserType.type -> {
                         TextWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -143,7 +144,7 @@ fun FormScreen(
 
                     QuestionType.IntegerType.type -> {
                         IntegerWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -160,7 +161,7 @@ fun FormScreen(
 
                     QuestionType.NumberType.type -> {
                         NumberWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -177,7 +178,7 @@ fun FormScreen(
 
                     QuestionType.LongitudeType.type -> {
                         NumberWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -194,7 +195,7 @@ fun FormScreen(
 
                     QuestionType.LatitudeType.type -> {
                         NumberWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -211,7 +212,7 @@ fun FormScreen(
 
                     QuestionType.AddressType.type -> {
                         TextWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -228,7 +229,7 @@ fun FormScreen(
 
                     QuestionType.EmailType.type -> {
                         EmailWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -245,7 +246,7 @@ fun FormScreen(
 
                     QuestionType.PasswordType.type -> {
                         PasswordWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -266,7 +267,7 @@ fun FormScreen(
 
                     QuestionType.SingleChoiceType.type -> {
                         SingleChoiceWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -287,7 +288,7 @@ fun FormScreen(
 
                     QuestionType.MoreChoiceType.type -> {
                         MoreChoiceWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -311,7 +312,7 @@ fun FormScreen(
 
                     QuestionType.CheckType.type -> {
                         CheckWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             errorMsg = localField.error,
                             required = localField.required,
@@ -333,7 +334,7 @@ fun FormScreen(
 
                     QuestionType.RadioType.type -> {
                         RadioWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             errorMsg = localField.error,
                             required = localField.required,
@@ -353,7 +354,7 @@ fun FormScreen(
 
                     QuestionType.DateType.type -> {
                         DateWidget(
-                            value = localField.value,
+                            value = localField.getFieldValue(),
                             title = localField.title,
                             unit = localField.unit,
                             errorMsg = localField.error,
@@ -370,7 +371,7 @@ fun FormScreen(
 
                     QuestionType.ImageType.type -> {
                         ImageWidget(
-                            value = localField.value,
+                            value = localField.getMediasToMap(),
                             title = localField.title,
                             errorMsg = localField.error,
                             required = localField.required,
@@ -379,13 +380,17 @@ fun FormScreen(
                             subTitles = localField.subTitles ?: listOf(),
                             description = localField.description,
                             onPreview = {
-                                val intent = Intent(context, ImagePreviewActivity::class.java).apply {
-                                    putStringArrayListExtra("uris", ArrayList(listOf<String>(it.toString())))
-                                }
+                                val intent =
+                                    Intent(context, ImagePreviewActivity::class.java).apply {
+                                        putStringArrayListExtra(
+                                            "uris",
+                                            ArrayList(listOf<String>(it.toString()))
+                                        )
+                                    }
                                 context.startActivity(intent)
                             }
                         ) { newValue ->
-                            val updated = localField.copy(value = newValue)
+                            val updated = localField.copy(value = StringUtil.mapToString(newValue))
                             localField = updated
                             viewModel.updateField(updated)
                         }
@@ -393,7 +398,7 @@ fun FormScreen(
 
                     QuestionType.VideoType.type -> {
                         VideoWidget(
-                            value = localField.value,
+                            value = localField.getMediasToMap(),
                             title = localField.title,
                             errorMsg = localField.error,
                             required = localField.required,
@@ -402,7 +407,7 @@ fun FormScreen(
                             subTitles = localField.subTitles ?: listOf(),
                             description = localField.description,
                         ) { newValue ->
-                            val updated = localField.copy(value = newValue)
+                            val updated = localField.copy(value = StringUtil.mapToString(newValue))
                             localField = updated
                             viewModel.updateField(updated)
                         }

@@ -23,11 +23,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import kotlinx.coroutines.launch
-import space.think.cloud.cts.lib.ui.form.ImageItem
+import space.think.cloud.cts.lib.ui.form.MediaItem
 import space.think.cloud.cts.lib.ui.form.ImageView
 import space.think.cloud.cts.lib.ui.utils.DateUtil
 import space.think.cloud.cts.lib.ui.utils.ImageUtil
-import space.think.cloud.cts.lib.ui.utils.StringUtil
 import java.util.Date
 import kotlin.math.ceil
 
@@ -41,7 +40,7 @@ import kotlin.math.ceil
 @Composable
 fun ImageWidget(
     modifier: Modifier = Modifier,
-    value: String,
+    value: Map<Int, MediaItem>,
     size: Dp = 80.dp,
     title: String,
     subTitles: List<String>,
@@ -53,13 +52,12 @@ fun ImageWidget(
     enabled: Boolean = true,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onPreview: ((Uri) -> Unit)? = null,
-    onChangeValue: (String) -> Unit,
+    onChangeValue: (Map<Int, MediaItem>) -> Unit,
 ) {
 
+    // 键盘控制器
     val localSoftwareKeyboardController = LocalSoftwareKeyboardController.current
-    // 解析数据
-    val newValue = StringUtil.jsonToMap(value)
-    // 是否显示删除图片Dalog
+    // 是否显示删除图片Dialog
     var isOpenDelete by remember {
         mutableStateOf(false)
     }
@@ -111,7 +109,7 @@ fun ImageWidget(
                     ImageView(
                         size = size,
                         title = subTitles[index],
-                        uri = newValue[index]?.path,
+                        uri = value[index]?.path?.toUri(),
                         isError = isError,
                         loading = selectIndex == index && loading,
                         onClick = {
@@ -148,14 +146,13 @@ fun ImageWidget(
                                     uri = path.toUri()
                                 ) {
                                     // 更新图片
-                                    val temp = newValue.toMutableMap()
+                                    val temp = value.toMutableMap()
                                     temp[selectIndex] =
-                                        ImageItem(
+                                        MediaItem(
                                             name = subTitles[selectIndex],
                                             path = it.toString()
                                         )
-                                    val json = StringUtil.mapToString(temp)
-                                    onChangeValue(json)
+                                    onChangeValue(temp.toMap())
                                     loading = false
                                 }
                             }
@@ -179,10 +176,9 @@ fun ImageWidget(
         confirmButton = {
             TextButton(onClick = {
                 isOpenDelete = false
-                val temp = newValue.toMutableMap()
+                val temp = value.toMutableMap()
                 temp.remove(currentImageIndex)
-                val json = StringUtil.mapToString(temp)
-                onChangeValue(json)
+                onChangeValue(temp.toMap())
 
             }) {
                 Text(text = "确定")

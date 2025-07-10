@@ -2,17 +2,17 @@ package space.think.cloud.cts.lib.ui.utils
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import space.think.cloud.cts.lib.ui.form.ImageItem
+import space.think.cloud.cts.lib.ui.form.MediaItem
 
 object StringUtil {
 
-    fun jsonToMap(json: String): Map<Int, ImageItem> {
+    fun jsonToMap(json: String): Map<Int, MediaItem> {
         if (json.isEmpty()) {
             return mapOf()
         }
         val gson = Gson()
-        val type = object : TypeToken<Map<Int, ImageItem>>() {}.type
-        val dataMap: Map<Int, ImageItem> = gson.fromJson(json, type)
+        val type = object : TypeToken<Map<Int, MediaItem>>() {}.type
+        val dataMap: Map<Int, MediaItem> = gson.fromJson(json, type)
         return dataMap
     }
 

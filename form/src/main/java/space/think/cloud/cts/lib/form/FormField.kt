@@ -1,6 +1,8 @@
 package space.think.cloud.cts.lib.form
 
+import space.think.cloud.cts.lib.ui.form.MediaItem
 import space.think.cloud.cts.lib.ui.form.Item
+import space.think.cloud.cts.lib.ui.utils.StringUtil
 
 data class FormField(
 
@@ -47,12 +49,16 @@ data class FormField(
 
     // 默认显示值
     val placeholder: String = "",
-){
-    fun getCurrentValue(): String{
-        return if (value.isEmpty() && defaultValue != null){
+) {
+    fun getFieldValue(): String {
+        return if (value.isEmpty() && defaultValue != null) {
             defaultValue
-        }else{
+        } else {
             value
         }
+    }
+
+    fun getMediasToMap(): Map<Int, MediaItem> {
+        return StringUtil.jsonToMap(getFieldValue())
     }
 }

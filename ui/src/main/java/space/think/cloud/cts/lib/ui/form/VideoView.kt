@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -55,7 +54,7 @@ import space.think.cloud.cts.lib.photo.PhotoController
 fun VideoView(
     modifier: Modifier = Modifier,
     index: Int,
-    uri: String? = null,
+    uri: Uri? = null,
     title: String? = null,
     size: Dp = 80.dp,
     loading: Boolean = false,
@@ -127,7 +126,7 @@ fun VideoView(
                                 .size(size)
                                 .padding(2.dp)
                                 .clickable {
-                                    onPreview?.invoke(uri.toUri())
+                                    onPreview?.invoke(uri)
                                 }
                         )
 
