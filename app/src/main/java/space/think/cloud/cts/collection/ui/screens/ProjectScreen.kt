@@ -3,6 +3,7 @@ package space.think.cloud.cts.collection.ui.screens
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -16,19 +17,25 @@ import space.think.cloud.cts.lib.ui.project.ProjectData
 @Composable
 fun ProjectScreen(
     modifier: Modifier,
-    projectViewModel: ProjectViewModel = viewModel()
+    projectViewModel: ProjectViewModel = viewModel(),
+    onClick: (ProjectData) -> Unit
 ) {
 
+    // 获取项目列表
     val projectList by projectViewModel.data.collectAsState()
 
-    ProjectContent(
-        modifier = modifier.fillMaxSize().padding(horizontal = 10.dp),
-        items = listOf(
-            ProjectData("123","123",0,0,),
-            ProjectData("123","123",0,0,)
-        )
-    ) {
-
+    LaunchedEffect(Unit) {
+        // 请求项目列表
+        projectViewModel.search()
     }
+
+
+    ProjectContent(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 10.dp),
+        items = projectList,
+        onClick = onClick,
+    )
 
 }

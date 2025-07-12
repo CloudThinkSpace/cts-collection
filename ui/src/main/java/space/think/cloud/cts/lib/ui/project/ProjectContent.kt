@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 
 data class ProjectData(
+    val id: String,
     val title: String,
     val subTitle: String,
     val type: Int,
@@ -23,7 +24,7 @@ fun ProjectContent(
     onClick: (ProjectData) -> Unit
 ) {
     val context = LocalContext.current
-    Scaffold { paddingValues->
+    Scaffold { paddingValues ->
         LazyColumn(
             modifier = modifier.padding(paddingValues)
         ) {

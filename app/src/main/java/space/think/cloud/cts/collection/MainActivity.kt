@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import space.think.cloud.cts.collection.ui.screens.MainScreen
 import space.think.cloud.cts.collection.ui.theme.CtsCollectionTheme
 import space.think.cloud.cts.lib.form.FormScreen
 import space.think.cloud.cts.lib.form.viewmodel.FormViewModel
@@ -43,7 +44,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             CtsCollectionTheme {
                 Greeting(
-                    name = "Android",
                     modifier = Modifier.fillMaxSize()
                 )
 //                val context = LocalContext.current
@@ -91,9 +91,10 @@ class MainActivity : ComponentActivity() {
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    val viewModel: FormViewModel = viewModel()
-    FormScreen(modifier = modifier, title = "表单界面", viewModel = viewModel)
+fun Greeting( modifier: Modifier = Modifier) {
+//    val viewModel: FormViewModel = viewModel()
+//    FormScreen(modifier = modifier, title = "表单界面", viewModel = viewModel)
+    MainScreen(modifier = modifier)
 }
 
 

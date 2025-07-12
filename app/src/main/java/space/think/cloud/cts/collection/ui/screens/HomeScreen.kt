@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import space.think.cloud.cts.collection.nav.TopLevelBackStack
 
 sealed interface TopLevelRoute {
     val selectIcon: ImageVector
@@ -61,10 +62,14 @@ private data object Dashboard : TopLevelRoute {
 // Home 菜单页面
 private val HOME_LEVEL_ROUTES: List<TopLevelRoute> = listOf(Project, Dashboard, Me)
 
+/**
+ * 该界面是程序的菜单界面，包含底部菜单页
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
+    mainLevelRouteStack: TopLevelBackStack<Any>,
 ) {
     val topLevelBackStack = remember { TopLevelBackStack<Any>(Project) }
 
@@ -99,7 +104,12 @@ fun HomeScreen(
             onBack = { topLevelBackStack.removeLast() },
             entryProvider = entryProvider {
                 entry<Project> {
-                    ProjectScreen(modifier.padding(paddingValue))
+                    ProjectScreen(
+                        modifier = modifier.padding(paddingValue),
+                    ){
+                        // 切换到任务列表中
+                        mainLevelRouteStack.addTopLevel(TaskList(projectId = it.id))
+                    }
                 }
                 entry<Dashboard> {
                     DashboardScreen(modifier.padding(paddingValue))
