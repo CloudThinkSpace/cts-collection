@@ -10,7 +10,7 @@ activityCompose = "1.10.1"
 composeBom = "2025.06.01"
 appcompat = "1.7.1"
 icons = "1.7.8"
-navigation3 = "1.0.0-alpha04"
+navigation3 = "1.0.0-alpha05"
 material = "1.12.0"
 retrofit = "2.9.0"
 viewmodel = "2.9.1"
@@ -19,6 +19,7 @@ gson = "2.11.0"
 accompanist = "0.37.3"
 accompanistPlaceholder = "0.36.0"
 exifinterface = "1.4.1"
+datastore = "1.1.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +51,7 @@ google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gs
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
 accompanist-placeholder-material = { group = "com.google.accompanist", name = "accompanist-placeholder-material", version.ref = "accompanistPlaceholder" }
 androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
+androidx-datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

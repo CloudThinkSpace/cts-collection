@@ -58,6 +58,8 @@ dependencies {
     implementation(project(":network"))
     implementation(project(":form"))
     implementation(project(":watermark"))
+    implementation(project(":common-datastore"))
+    implementation(libs.androidx.datastore)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

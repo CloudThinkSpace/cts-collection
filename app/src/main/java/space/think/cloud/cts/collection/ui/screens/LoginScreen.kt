@@ -1,226 +1,302 @@
 package space.think.cloud.cts.collection.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.SaveAs
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-import space.think.cloud.cts.lib.ui.R
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import space.think.cloud.cts.collection.viewmodel.AuthViewModel
+import space.think.cloud.cts.collection.R
 
 
+/**
+ * ClassName: LoginScreen
+ * Description:
+ * @date: 2022/9/30 20:33
+ * @author: tanghy
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    modifier: Modifier,
-    headerImg: Painter,
+    viewModel: AuthViewModel = viewModel(),
+    onBack: ()-> Unit,
 ) {
 
-    // 电话变量
-    var photo by remember {
+    // 用户变量
+    var username by remember {
         mutableStateOf("")
     }
+
     // 密码变量
     var password by remember {
         mutableStateOf("")
     }
-    // 是否显示密码
-    var obscure by remember {
+
+    // 是否显示密码变量
+    var isPasswordVisible by remember {
         mutableStateOf(false)
     }
-    // 是否显示进度
-    var loading by remember {
+
+    // 是否显示加载组件的变量
+    var isLoading by remember {
         mutableStateOf(false)
     }
-    // 信息展示
-    val snackbarHostState = remember {
-        SnackbarHostState()
-    }
-    // 线程
-    val scope = rememberCoroutineScope()
+
+    val context = LocalContext.current
+
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
-
-
-        Column(
-            modifier = modifier
-                .padding(paddingValues),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box {
-                Image(
-                    painter = painterResource(R.drawable.shape),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(5 / 5f)
-                )
-                Column(
-                    modifier = Modifier.matchParentSize().padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceAround
-                ) {
-                    Image(
-                        painter = headerImg,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
+        topBar = {
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                ),
+                title = {
+                    Text(
+                        "登录",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                    Text("欢迎使用", style = MaterialTheme.typography.headlineMedium)
-                }
-            }
-
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        onBack()
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Localized description"
+                        )
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+            )
+        }
+    ) {
+        Box(
+            modifier = Modifier.padding(it).fillMaxSize(),
+            contentAlignment = Alignment.TopEnd
+        ) {
             Column(
-                modifier = Modifier.padding(28.dp, 0.dp)
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
             ) {
 
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = photo,
-                    readOnly = loading,
-                    onValueChange = { it ->
-                        photo = it
-                    },
-                    shape = MaterialTheme.shapes.small,
-                    leadingIcon = {
-                        Icon(Icons.Default.Phone, contentDescription = null)
-                    },
-                    label = {
-                        Text("手机号")
-                    },
-                    singleLine = true,
-                    trailingIcon = {
-                        // 判断是否为空
-                        if (photo.isNotEmpty() && !loading) {
-                            IconButton(onClick = { photo = "" }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Clear,
-                                    contentDescription = null
-                                )
-                            }
-                        }
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Phone
-                    )
-                )
-
-                Spacer(Modifier.height(10.dp))
-
-                OutlinedTextField(
+                Image(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(0.dp),
-                    value = password,
-                    readOnly = loading,
-                    singleLine = true,
-                    onValueChange = { it ->
-                        password = it
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
-                    ),
-                    shape = MaterialTheme.shapes.small,
-                    leadingIcon = {
-                        Icon(Icons.Default.Lock, contentDescription = null)
-                    },
-                    visualTransformation = if (obscure) VisualTransformation.None else PasswordVisualTransformation(),
-                    label = {
-                        Text("密码")
-                    },
-                    trailingIcon = {
-                        val visibilityIcon = if (obscure) {
-                            Icons.Filled.Visibility
-                        } else {
-                            Icons.Filled.VisibilityOff
-                        }
+                        .weight(1f)
+                        .padding(10.dp)
+                        .clip(CircleShape),
 
-                        IconButton(
-                            onClick = {
-                                obscure = !obscure
-                            }
-                        ) {
-                            Icon(visibilityIcon, contentDescription = null)
-                        }
-
-                    }
-
+                    contentScale = ContentScale.FillBounds,
+                    painter = painterResource(R.drawable.logo_header),
+                    contentDescription = "Logo"
                 )
 
-                Spacer(Modifier.height(16.dp))
+                Card(
+                    modifier = Modifier
+                        .weight(2f),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(topStart = 100f, topEnd = 100f),
 
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(),
-                    shape = RoundedCornerShape(10.dp),
-                    enabled = !loading,
-                    onClick = {
-                        if (photo.isEmpty() || password.isEmpty()) {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("手机号或者密码不能为空")
-                            }
-                        } else {
-                            loading = !loading
-                        }
-                    }
-                ) {
-                    Text("登录")
-                }
+                    ) {
 
-                if (loading) {
-                    LinearProgressIndicator(
+
+                    Column(
                         modifier = Modifier
-                            .height(1.dp)
-                            .fillMaxWidth()
-                    )
+                            .fillMaxSize()
+                            .padding(horizontal = 30.dp, vertical = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        Text(
+                            text = "欢迎使用",
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = "外业核查采集App",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                            color = Color.Gray
+                        )
+
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+
+                            // 用户组件
+                            OutlinedTextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = username,
+                                onValueChange = {
+                                    username = it
+                                },
+                                label = { Text(text = "用户") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Person, contentDescription = "User")
+                                },
+                                trailingIcon = {
+                                    IconButton(onClick = { username = "" }) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Clear,
+                                            contentDescription = ""
+                                        )
+                                    }
+                                },
+
+                                )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            OutlinedTextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = password,
+                                onValueChange = {
+                                    password = it
+                                },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password,
+                                    imeAction = ImeAction.Done
+                                ),
+                                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                label = { Text(text = "密码") },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Lock, contentDescription = "Lock")
+                                },
+                                trailingIcon = {
+                                    IconButton(onClick = {
+                                        isPasswordVisible = !isPasswordVisible
+                                    }) {
+                                        Icon(
+                                            imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                            contentDescription = ""
+                                        )
+                                    }
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp),
+                                enabled = !isLoading,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                ),
+                                shape = RoundedCornerShape(10.dp),
+                                onClick = {
+                                    isLoading = true
+                                    // 登录
+                                    viewModel.login(username, password) {
+
+                                    }
+
+                                }) {
+                                Text(text = "登录", fontSize = 20.sp, color = Color.White)
+                            }
+
+
+                        }
+
+
+                    }
                 }
 
+            }
+
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .size(50.dp),
+                    color = Color.White
+                )
+            }
+
+            if (viewModel.data.collectAsState().value != null) {
+                Toast.makeText(context, "登录成功", Toast.LENGTH_LONG).show()
+                isLoading = false
+                onBack()
+            }
+
+
+
+            if (viewModel.error.collectAsState().value != null) {
+                Toast.makeText(context, viewModel.error.collectAsState().value, Toast.LENGTH_LONG)
+                    .show()
+                isLoading = false
             }
 
         }
     }
 
+    Surface(color = MaterialTheme.colorScheme.primary) {
+
+
+
+    }
 
 }

@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import space.think.cloud.cts.lib.network.RetrofitClient
 import space.think.cloud.cts.lib.network.model.request.RequestPage
 import space.think.cloud.cts.lib.network.model.request.RequestProjectSearch
+import space.think.cloud.cts.lib.network.services.ProjectService
 import space.think.cloud.cts.lib.ui.project.ProjectData
 
 class ProjectViewModel : BaseViewModel() {
@@ -12,7 +13,7 @@ class ProjectViewModel : BaseViewModel() {
     private val _posts = MutableStateFlow<List<ProjectData>>(emptyList())
     val data: StateFlow<List<ProjectData>> get() = _posts
 
-    private val projectService = RetrofitClient.projectService
+    private val projectService = RetrofitClient.createService<ProjectService>()
 
     fun search() = launch(
         {

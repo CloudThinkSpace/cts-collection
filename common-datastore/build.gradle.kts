@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "space.think.cloud.cts.lib.network"
+    namespace = "space.think.cloud.cts.common_datastore"
     compileSdk = 36
 
     defaultConfig {
@@ -37,10 +37,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.squareup.retrofit2)
-    implementation(libs.squareup.retrofit2.json)
     implementation(libs.androidx.datastore)
-    implementation(project(":common-datastore"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
