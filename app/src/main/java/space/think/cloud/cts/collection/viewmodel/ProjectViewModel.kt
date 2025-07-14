@@ -3,7 +3,6 @@ package space.think.cloud.cts.collection.viewmodel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import space.think.cloud.cts.lib.network.RetrofitClient
-import space.think.cloud.cts.lib.network.model.request.RequestPage
 import space.think.cloud.cts.lib.network.model.request.RequestProjectSearch
 import space.think.cloud.cts.lib.network.services.ProjectService
 import space.think.cloud.cts.lib.ui.project.ProjectData
@@ -15,9 +14,9 @@ class ProjectViewModel : BaseViewModel() {
 
     private val projectService = RetrofitClient.createService<ProjectService>()
 
-    fun search() = launch(
+    fun search(name: String) = launch(
         {
-            projectService.search(RequestProjectSearch(page = RequestPage()))
+            projectService.search(RequestProjectSearch(name = name))
         }
     ) {
         it?.let { page ->
@@ -32,6 +31,11 @@ class ProjectViewModel : BaseViewModel() {
                 )
             }
         }
+    }
+
+    override fun reset() {
+        super.reset()
+        _posts.value = emptyList()
     }
 
 }

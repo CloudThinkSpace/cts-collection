@@ -43,4 +43,8 @@ class DataStoreManage(context: Context) {
     suspend fun getPhone(): String {
         return dataStoreUtil.getData(PreferencesKeys.PHONE_KEY, "").first()
     }
+
+    suspend fun getToken(): String {
+        return dataStoreUtil.getData(PreferencesKeys.TOKEN_KEY, "").first()
+    }
 }
