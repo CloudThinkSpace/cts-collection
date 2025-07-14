@@ -64,7 +64,7 @@ import space.think.cloud.cts.collection.viewmodel.AuthViewModel
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = viewModel(),
-    login:()-> Unit,
+    login: () -> Unit,
 ) {
 
     var nickname by remember {
@@ -85,7 +85,7 @@ fun ProfileScreen(
         mutableStateOf(false)
     }
 
-    val scope  = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
 
     val dataStoreManage by remember {
         mutableStateOf(DataStoreManage(context))
@@ -128,17 +128,9 @@ fun ProfileScreen(
 
     LaunchedEffect(Unit) {
 
-        dataStoreManage.getNickname {
-            isLogin = it.isNotEmpty()
-            if (isLogin) {
-                nickname = it
-            }
-        }
-        dataStoreManage.getPhone {
-            if (isLogin) {
-                phone = it
-            }
-        }
+        nickname = dataStoreManage.getNickname()
+        phone = dataStoreManage.getPhone()
+        isLogin = nickname.isNotEmpty()
     }
 
     Column(
@@ -240,13 +232,13 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(text = "设置", color = Color.Black)
                     }
-                    Icon(Icons.Default.ChevronRight, contentDescription = "", tint = Color.Black)
+                    Icon(Icons.Default.ChevronRight, contentDescription = "", tint = Color.Gray)
                 }
 
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    thickness = 0.5.dp, color = Color.Gray
+                    thickness = 0.2.dp, color = Color.Gray
                 )
 
                 Row(
@@ -264,13 +256,13 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(text = "关于", color = Color.Black)
                     }
-                    Icon(Icons.Default.ChevronRight, contentDescription = "", tint = Color.Black)
+                    Icon(Icons.Default.ChevronRight, contentDescription = "", tint = Color.Gray)
                 }
 
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    thickness = 0.5.dp, color = Color.Gray
+                    thickness = 0.2.dp, color = Color.Gray
                 )
 
                 Row(
@@ -292,7 +284,7 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(text = "帮助", color = Color.Black)
                     }
-                    Icon(Icons.Default.ChevronRight, contentDescription = "", tint = Color.Black)
+                    Icon(Icons.Default.ChevronRight, contentDescription = "", tint = Color.Gray)
                 }
 
             }

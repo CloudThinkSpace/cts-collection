@@ -36,15 +36,11 @@ class DataStoreManage(context: Context) {
         dataStoreUtil.removeData(PreferencesKeys.TOKEN_KEY)
     }
 
-    suspend fun getNickname(callback: (String) -> Unit) {
-        dataStoreUtil.getData(PreferencesKeys.NICKNAME_KEY, "").first().also {
-            callback(it)
-        }
+    suspend fun getNickname(): String {
+        return dataStoreUtil.getData(PreferencesKeys.NICKNAME_KEY, "").first()
     }
 
-    suspend fun getPhone(callback: (String) -> Unit) {
-        dataStoreUtil.getData(PreferencesKeys.PHONE_KEY, "").first().also {
-            callback(it)
-        }
+    suspend fun getPhone(): String {
+        return dataStoreUtil.getData(PreferencesKeys.PHONE_KEY, "").first()
     }
 }
