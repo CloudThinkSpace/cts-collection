@@ -4,4 +4,4 @@ data object Login
 data object Home
 data object Help
 
-data class TaskList(val projectId: String)
+data class TaskList(val dataTableName: String)

@@ -22,8 +22,9 @@ class ProjectViewModel : BaseViewModel() {
         it?.let { page ->
             val list = page.data
             _posts.value = list.map {
+                // id字段绑定项目的数据编号，不是项目编号
                 ProjectData(
-                    id = it.id,
+                    id = it.dataTableName,
                     title = it.name,
                     subTitle = it.code,
                     type = it.type,

@@ -37,7 +37,7 @@ fun TaskItem(
     lon: String,
     lat: String,
     status: Int = 0,
-    leadBackgroundColor: Color = Color.Green,
+    leadBackgroundColor: Color = Color(0xFF17A211),
     onClickDetail: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {

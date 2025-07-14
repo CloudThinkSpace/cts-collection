@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 data class TaskItem(
@@ -43,9 +44,11 @@ fun TaskContent(
 
             TaskItem(
                 leadText = if (item.status == 0) "未采" else "已采",
+                leadBackgroundColor = if (item.status == 0) Color(0xFF17A211) else Color(0xfff55951),
                 title = item.name,
                 lon = item.lon,
                 lat = item.lat,
+                status = item.status,
                 onClickDetail = {
                     onClickDetail?.invoke(item)
                 }

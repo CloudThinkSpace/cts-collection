@@ -42,7 +42,14 @@ fun MainScreen(
                 HelpScreen(modifier = modifier)
             }
             entry<TaskList> {
-                TaskListScreen(id = it.projectId, modifier = modifier)
+                TaskScreen(
+                    dataTableName = it.dataTableName,
+                    onBack = {
+                        mainLevelRouteStack.addTopLevel(Home)
+                    }
+                ) {
+
+                }
             }
         }
 

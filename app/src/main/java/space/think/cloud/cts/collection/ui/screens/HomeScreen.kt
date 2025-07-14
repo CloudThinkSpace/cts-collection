@@ -35,7 +35,6 @@ fun HomeScreen(
 ) {
 
     Scaffold(
-
         bottomBar = {
             NavigationBar {
                 HOME_LEVEL_ROUTES.forEach { topLevelRoute ->
@@ -69,7 +68,7 @@ fun HomeScreen(
                         modifier = modifier.padding(paddingValue),
                     ){
                         // 切换到任务列表中
-                        mainLevelRouteStack.addTopLevel(TaskList(projectId = it.id))
+                        mainLevelRouteStack.addTopLevel(TaskList(dataTableName = it.id))
                     }
                 }
                 entry<Dashboard> {

@@ -70,7 +70,11 @@ fun ProjectScreen(
 
     Column(modifier = modifier.fillMaxSize()) {
         SearchAppBar(
-            searchValue = searchValue
+            modifier = Modifier.padding(10.dp),
+            searchValue = searchValue,
+            onClear = {
+                searchValue = ""
+            }
         ) {
             searchValue = it
         }
