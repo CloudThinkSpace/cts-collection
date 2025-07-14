@@ -60,6 +60,6 @@ object PreferencesKeys {
 
     val NICKNAME_KEY = stringPreferencesKey("nickname_key")
     val USERNAME_KEY = stringPreferencesKey("username_key")
-    val PHOTO_KEY = stringPreferencesKey("photo_key")
+    val PHONE_KEY = stringPreferencesKey("phone_key")
 
 }

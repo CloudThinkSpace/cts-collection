@@ -1,6 +1,6 @@
 package space.think.cloud.cts.lib.network.model.request
 
 data class RequestLogin(
-    val photo: String,
+    val username: String,
     val password: String,
 )

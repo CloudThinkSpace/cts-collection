@@ -17,14 +17,13 @@ class AuthViewModel : BaseViewModel() {
 
     private val authService = RetrofitClient.createService<AuthService>()
 
-    fun login(photo: String, password: String, success: (ResponseAuth) -> Unit) = launch(
+    fun login(username: String, password: String, success: (ResponseAuth) -> Unit) = launch(
         {
-            authService.login(RequestLogin(photo, password))
+            authService.login(RequestLogin(username, password))
         }
     ) {
         it?.let { auth ->
             _posts.value = auth.userInfo
-            // 存储
             success(auth)
         }
     }
@@ -35,6 +34,11 @@ class AuthViewModel : BaseViewModel() {
      */
     fun logout() = viewModelScope.launch {
 
+    }
+
+    override fun reset(){
+        super.reset()
+        _posts.value = null
     }
 
 }

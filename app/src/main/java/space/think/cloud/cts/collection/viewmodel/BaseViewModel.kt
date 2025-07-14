@@ -37,7 +37,7 @@ open class BaseViewModel : ViewModel() {
             }
         }
 
-    fun reset() {
+    open fun reset() {
         _error.value = null
     }
 

@@ -19,7 +19,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.SaveAs
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -34,7 +33,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -43,6 +41,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,8 +59,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import space.think.cloud.cts.collection.viewmodel.AuthViewModel
+import kotlinx.coroutines.launch
 import space.think.cloud.cts.collection.R
+import space.think.cloud.cts.collection.datastore.DataStoreManage
+import space.think.cloud.cts.collection.viewmodel.AuthViewModel
 
 
 /**
@@ -74,7 +75,7 @@ import space.think.cloud.cts.collection.R
 @Composable
 fun LoginScreen(
     viewModel: AuthViewModel = viewModel(),
-    onBack: ()-> Unit,
+    onBack: () -> Unit,
 ) {
 
     // 用户变量
@@ -98,6 +99,12 @@ fun LoginScreen(
     }
 
     val context = LocalContext.current
+
+    val dataStoreManage by remember {
+        mutableStateOf(DataStoreManage(context = context))
+    }
+
+    val scope = rememberCoroutineScope()
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -130,7 +137,9 @@ fun LoginScreen(
         }
     ) {
         Box(
-            modifier = Modifier.padding(it).fillMaxSize(),
+            modifier = Modifier
+                .padding(it)
+                .fillMaxSize(),
             contentAlignment = Alignment.TopEnd
         ) {
             Column(
@@ -175,7 +184,7 @@ fun LoginScreen(
                         Text(
                             text = "外业核查采集App",
                             fontWeight = FontWeight.Bold,
-                            fontSize = MaterialTheme.typography.headlineLarge.fontSize,
+                            fontSize = MaterialTheme.typography.headlineMedium.fontSize,
                             color = Color.Gray
                         )
 
@@ -251,7 +260,10 @@ fun LoginScreen(
                                     isLoading = true
                                     // 登录
                                     viewModel.login(username, password) {
-
+                                        scope.launch {
+                                            dataStoreManage.saveUser(it)
+                                            onBack()
+                                        }
                                     }
 
                                 }) {
@@ -279,7 +291,7 @@ fun LoginScreen(
             if (viewModel.data.collectAsState().value != null) {
                 Toast.makeText(context, "登录成功", Toast.LENGTH_LONG).show()
                 isLoading = false
-                onBack()
+                viewModel.reset()
             }
 
 
@@ -288,15 +300,10 @@ fun LoginScreen(
                 Toast.makeText(context, viewModel.error.collectAsState().value, Toast.LENGTH_LONG)
                     .show()
                 isLoading = false
+                viewModel.reset()
             }
 
         }
-    }
-
-    Surface(color = MaterialTheme.colorScheme.primary) {
-
-
-
     }
 
 }

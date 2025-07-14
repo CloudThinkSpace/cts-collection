@@ -3,7 +3,17 @@ package space.think.cloud.cts.collection.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -11,9 +21,22 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,11 +48,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import space.think.cloud.cts.collection.R
+import space.think.cloud.cts.collection.datastore.DataStoreManage
 import space.think.cloud.cts.collection.viewmodel.AuthViewModel
-import space.think.cloud.cts.common_datastore.DataStoreUtil
-import space.think.cloud.cts.common_datastore.PreferencesKeys
-import space.think.cloud.cts.collection.R;
 
 /**
  * ClassName: HomeScreen
@@ -45,7 +67,7 @@ fun ProfileScreen(
     login:()-> Unit,
 ) {
 
-    var nicename by remember {
+    var nickname by remember {
         mutableStateOf("游客")
     }
 
@@ -63,6 +85,12 @@ fun ProfileScreen(
         mutableStateOf(false)
     }
 
+    val scope  = rememberCoroutineScope()
+
+    val dataStoreManage by remember {
+        mutableStateOf(DataStoreManage(context))
+    }
+
     if (isShow) {
         AlertDialog(
             onDismissRequest = {
@@ -76,8 +104,14 @@ fun ProfileScreen(
                     isShow = false
                     viewModel.logout()
                     isLogin = false
-                    nicename = "游客"
+                    nickname = "游客"
                     phone = "暂无电话"
+                    // 移除app存储的用户信息
+                    scope.launch {
+                        dataStoreManage.removeUser()
+                    }
+
+
                 }) {
                     Text(text = "确定")
                 }
@@ -93,22 +127,18 @@ fun ProfileScreen(
     }
 
     LaunchedEffect(Unit) {
-        val baseStore = DataStoreUtil(context)
 
-        baseStore.getData(PreferencesKeys.NICKNAME_KEY, "").first().also {
+        dataStoreManage.getNickname {
             isLogin = it.isNotEmpty()
-        }.let {
-            if (it.isNotEmpty()) {
-                nicename = it
+            if (isLogin) {
+                nickname = it
             }
         }
-
-        baseStore.getData(PreferencesKeys.PHOTO_KEY, "").first().let {
-            if (it.isNotEmpty()){
+        dataStoreManage.getPhone {
+            if (isLogin) {
                 phone = it
             }
         }
-
     }
 
     Column(
@@ -143,7 +173,7 @@ fun ProfileScreen(
                 Column(modifier = Modifier.padding(10.dp)) {
 
                     Text(
-                        text = nicename,
+                        text = nickname,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
@@ -162,6 +192,7 @@ fun ProfileScreen(
             if (isLogin) {
                 Button(onClick = {
                     isShow = true
+
                 }) {
                     Text(text = "退出")
                 }

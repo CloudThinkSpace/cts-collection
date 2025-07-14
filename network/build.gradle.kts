@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.squareup.retrofit2)
     implementation(libs.squareup.retrofit2.json)
     implementation(libs.androidx.datastore)
+    implementation (libs.logging.interceptor)
     implementation(project(":common-datastore"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
