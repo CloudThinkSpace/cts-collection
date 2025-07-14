@@ -1,6 +1,7 @@
 package space.think.cloud.cts.collection
 
 import android.annotation.SuppressLint
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -38,6 +39,7 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("LocalContextResourcesRead")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT//竖屏
         // 隐藏bar
         actionBar?.hide()
         enableEdgeToEdge()

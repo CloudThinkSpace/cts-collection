@@ -1,14 +1,18 @@
 package space.think.cloud.cts.collection.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -35,6 +39,8 @@ fun HomeScreen(
 ) {
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = Color.Red,
         bottomBar = {
             NavigationBar {
                 HOME_LEVEL_ROUTES.forEach { topLevelRoute ->
@@ -59,30 +65,34 @@ fun HomeScreen(
         }
     ) { paddingValue ->
 
-        NavDisplay(
-            backStack = topLevelBackStack.backStack,
-            onBack = { topLevelBackStack.removeLast() },
-            entryProvider = entryProvider {
-                entry<Project> {
-                    ProjectScreen(
-                        modifier = modifier.padding(paddingValue),
-                    ){
-                        // 切换到任务列表中
-                        mainLevelRouteStack.addTopLevel(TaskList(dataTableName = it.id))
+        Box(
+            modifier = Modifier.padding(paddingValue).background(color = MaterialTheme.colorScheme.background)
+        ){
+            NavDisplay(
+                backStack = topLevelBackStack.backStack,
+                onBack = { topLevelBackStack.removeLast() },
+                entryProvider = entryProvider {
+                    entry<Project> {
+                        ProjectScreen(
+                            modifier = Modifier,
+                        ){
+                            // 切换到任务列表中
+                            mainLevelRouteStack.addTopLevel(TaskList(dataTableName = it.id))
+                        }
+                    }
+                    entry<Dashboard> {
+                        DashboardScreen(modifier = Modifier,)
+                    }
+                    entry<Me> {
+                        ProfileScreen(modifier = Modifier,){
+                            // 切换到登录页
+                            mainLevelRouteStack.addTopLevel(Login)
+                        }
                     }
                 }
-                entry<Dashboard> {
-                    DashboardScreen(modifier.padding(paddingValue))
-                }
-                entry<Me> {
-                    ProfileScreen(modifier.padding(paddingValue)){
-                        // 切换到登录页
-                        mainLevelRouteStack.addTopLevel(Login)
-                    }
-                }
-            }
 
-        )
+            )
+        }
 
     }
 }
