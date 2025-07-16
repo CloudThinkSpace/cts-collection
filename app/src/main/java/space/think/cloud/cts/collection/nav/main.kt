@@ -1,7 +1,10 @@
 package space.think.cloud.cts.collection.nav
 
+import space.think.cloud.cts.lib.ui.task.TaskItem
+
 data object Login
 data object Home
 data object Help
 
 data class TaskList(val dataTableName: String)
+data class TaskMapView(val dataTableName: String, val taskItem: TaskItem?)

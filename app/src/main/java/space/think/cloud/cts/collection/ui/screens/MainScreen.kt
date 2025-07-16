@@ -11,6 +11,7 @@ import space.think.cloud.cts.collection.nav.Home
 import space.think.cloud.cts.collection.nav.Login
 import space.think.cloud.cts.collection.nav.Project
 import space.think.cloud.cts.collection.nav.TaskList
+import space.think.cloud.cts.collection.nav.TaskMapView
 import space.think.cloud.cts.collection.nav.TopLevelBackStack
 
 /**
@@ -33,7 +34,7 @@ fun MainScreen(
                     topLevelBackStack = topLevelBackStack,
                 )
             }
-            entry<Login>{
+            entry<Login> {
                 LoginScreen {
                     mainLevelRouteStack.addTopLevel(Home)
                 }
@@ -41,14 +42,22 @@ fun MainScreen(
             entry<Help> {
                 HelpScreen(modifier = modifier)
             }
+            entry<TaskMapView> {
+                TaskMapViewScreen(
+                    it.dataTableName,
+                    it.taskItem
+                ) {
+                    mainLevelRouteStack.removeLast()
+                }
+            }
             entry<TaskList> {
                 TaskScreen(
                     dataTableName = it.dataTableName,
                     onBack = {
-                        mainLevelRouteStack.addTopLevel(Home)
+                        mainLevelRouteStack.removeLast()
                     }
-                ) {
-
+                ) { dataTableName, taskItem ->
+                    mainLevelRouteStack.addTopLevel(TaskMapView(dataTableName, taskItem))
                 }
             }
         }

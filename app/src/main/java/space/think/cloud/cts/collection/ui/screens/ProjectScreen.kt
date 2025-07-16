@@ -46,7 +46,7 @@ fun ProjectScreen(
         mutableStateOf(false)
     }
     var checkToken by remember {
-        mutableStateOf(false)
+        mutableStateOf(true)
     }
 
     LaunchedEffect(searchValue) {
@@ -58,7 +58,6 @@ fun ProjectScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        checkToken = true
         val dataStoreManage = DataStoreManage(context = context)
         val token = dataStoreManage.getToken()
         checkToken = false
