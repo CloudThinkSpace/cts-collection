@@ -36,6 +36,7 @@ class TaskViewModel : BaseViewModel() {
                 TaskItem(
                     id = it.id,
                     name = it.code,
+                    code = it.code,
                     lon = it.lon.toString(),
                     lat = it.lat.toString(),
                     status = it.status

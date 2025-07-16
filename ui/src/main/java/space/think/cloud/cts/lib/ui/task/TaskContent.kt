@@ -13,6 +13,7 @@ data class TaskItem(
     val id: String,
     val status: Int,
     val name: String,
+    val code: String,
     val lon: String,
     val lat: String,
 )

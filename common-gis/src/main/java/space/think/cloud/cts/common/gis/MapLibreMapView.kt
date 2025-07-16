@@ -8,13 +8,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.maplibre.android.MapLibre
+import org.maplibre.android.annotations.Marker
+import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
+import org.maplibre.android.maps.Style
+import org.maplibre.android.style.layers.BackgroundLayer
+import org.maplibre.android.style.layers.PropertyFactory
+import org.maplibre.android.style.sources.GeoJsonSource
+import org.maplibre.geojson.FeatureCollection
+import space.think.cloud.cts.common.gis.layer.setupTiandituStyle
 
 @Composable
 fun MapLibreMapView(
     modifier: Modifier = Modifier,
-    styleUrl: String = "https://demotiles.maplibre.org/style.json",
+    onInfoWindowClick: (Marker) -> Unit,
     onMapReady: (MapLibreMapController) -> Unit
 ) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -37,10 +45,20 @@ fun MapLibreMapView(
         modifier = modifier,
         update = { view ->
             view.getMapAsync { map ->
-                map.setStyle(styleUrl) {
+
+                map.onInfoWindowClickListener = object : MapLibreMap.OnInfoWindowClickListener {
+                    override fun onInfoWindowClick(marker: Marker): Boolean {
+                        onInfoWindowClick(marker)
+                        return true
+                    }
+
+                }
+
+                setupTiandituStyle(map, "e6ed3fdaf6ca24a041d8dcb69ab279f2") {
                     val mapController = MapLibreMapController(context, map)
                     onMapReady(mapController)
                 }
+
             }
         }
     )

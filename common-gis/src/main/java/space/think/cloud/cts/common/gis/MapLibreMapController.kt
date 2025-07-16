@@ -17,7 +17,7 @@ class MapLibreMapController(
     val context: Context,
     val mapLibreMap: MapLibreMap
 ) : MapController {
-    override fun addMarker(marker: CtsMarker) {
+    override fun <T> addMarker(marker: CtsMarker): T {
         val bitmap = drawableToBitmap(context, marker.icon)
         val markerIcon = IconFactory.getInstance(context).fromBitmap(bitmap)
         val markerOptions = MarkerOptions().apply {
@@ -26,7 +26,7 @@ class MapLibreMapController(
             snippet = marker.description
             icon = markerIcon
         }
-        mapLibreMap.addMarker(markerOptions)
+        return mapLibreMap.addMarker(markerOptions) as T
     }
 
     override fun getExtent() {
@@ -70,13 +70,27 @@ class MapLibreMapController(
         )
     }
 
-    fun animateToBounds(bounds: List<LatLng>) {
+    fun animateToBounds(
+        bounds: List<LatLng>,
+        delay: Int = 2000,
+        onFinish: (() -> Unit)? = null
+    ) {
         mapLibreMap.getCameraForLatLngBounds(LatLngBounds.fromLatLngs(bounds))?.let {
             val newCameraPosition = CameraPosition.Builder()
                 .target(it.target)
                 .zoom(it.zoom - 0.5)
                 .build()
-            mapLibreMap.cameraPosition = newCameraPosition
+            mapLibreMap.animateCamera(
+                CameraUpdateFactory.newCameraPosition(newCameraPosition), delay,
+                object : CancelableCallback {
+                    override fun onCancel() {
+                    }
+
+                    override fun onFinish() {
+                        onFinish?.invoke()
+                    }
+                }
+            )
         }
     }
 
@@ -91,6 +105,11 @@ class MapLibreMapController(
             icon = markerIcon
         }
         mapLibreMap.selectMarker(Marker(markerOptions))
+    }
+
+    // 显示InfoWindow
+    fun showInfoWindow(marker: Marker) {
+        mapLibreMap.selectMarker(marker)
     }
 
     // 隐藏InfoWindow
