@@ -6,5 +6,9 @@ data object Login
 data object Home
 data object Help
 
-data class TaskList(val dataTableName: String)
-data class TaskMapView(val dataTableName: String, val taskItem: TaskItem?)
+data class TaskList(val projectId: String, val dataTableName: String)
+data class TaskMapView(
+    val projectId: String,
+    val dataTableName: String,
+    val taskItem: TaskItem?
+)

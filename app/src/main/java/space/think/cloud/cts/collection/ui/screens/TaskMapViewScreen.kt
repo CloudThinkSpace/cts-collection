@@ -24,15 +24,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.maplibre.android.annotations.Marker
 import org.maplibre.android.geometry.LatLng
 import space.think.cloud.cts.collection.R
+import space.think.cloud.cts.collection.viewmodel.ProjectLayerViewModel
 import space.think.cloud.cts.collection.viewmodel.TaskViewModel
 import space.think.cloud.cts.common.gis.CtsMarker
 import space.think.cloud.cts.common.gis.MapLibreMapController
@@ -45,14 +49,18 @@ import space.think.cloud.cts.lib.ui.task.TaskItem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskMapViewScreen(
+    projectId: String,
     dataTableName: String,
     taskItem: TaskItem?,
     taskViewModel: TaskViewModel = viewModel(key = "taskMap"),
+    projectLayerViewModel: ProjectLayerViewModel = viewModel(),
     onBack: () -> Unit,
 ) {
 
     // 获取任务列表
     val taskList by taskViewModel.data.collectAsState()
+
+    val projectLayers by projectLayerViewModel.data.collectAsState()
 
     var mapLibreMapController: MapLibreMapController? by remember {
         mutableStateOf(null)
@@ -67,10 +75,21 @@ fun TaskMapViewScreen(
         mutableStateOf(null)
     }
 
+    val scope = rememberCoroutineScope()
+
     // 监听返回键
     BackHandler(enabled = true) {
         taskViewModel.reset()
         onBack()
+    }
+
+    // 图层查询结果处理
+    LaunchedEffect(projectLayers) {
+        if (projectLayers.isNotEmpty()) {
+            projectLayers.forEach {
+                mapLibreMapController?.addLayer(it.name, it.url)
+            }
+        }
     }
 
     LaunchedEffect(taskList) {
@@ -159,8 +178,20 @@ fun TaskMapViewScreen(
             }
         ) {
             mapLibreMapController = it
-            // 查询所有任务
-            taskViewModel.search(dataTableName, "")
+
+            scope.launch {
+                val deferred1 = async {
+                    // 查询所有任务
+                    taskViewModel.search(dataTableName, "")
+                }
+                val deferred2 = async {
+                    projectLayerViewModel.getByProjectId(projectId) { }
+                }
+                // 等待两个协程都完成
+                deferred1.await()
+                deferred2.await()
+
+            }
         }
     }
 

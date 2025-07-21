@@ -5,28 +5,25 @@ import org.maplibre.android.maps.Style
 import org.maplibre.android.style.layers.BackgroundLayer
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.RasterLayer
-import space.think.cloud.cts.common.gis.source.tdt.TiandituManager
+import space.think.cloud.cts.common.gis.source.tdt.TdtSourceBuilder
 
-fun setupTiandituStyle(maplibreMap: MapLibreMap, key: String, callback: () -> Unit) {
+fun setupTiandituStyle(maplibreMap: MapLibreMap, key: String) {
 
-    val tiandituManager = TiandituManager()
     // 影像图层源
-    val tiandituSource = tiandituManager.createTdtSource(
-        id = "tianditu-source",
-        layer = "img_w",
-        key = key
-    )
+    val tiandituSource = TdtSourceBuilder()
+        .withId("tianditu-source")
+        .withLayer("img_w")
+        .withKey(key)
+        .build()
 
-    // 标注图层源
-    val tiandituAnnotationSource = tiandituManager.createTdtSource(
-        id = "tianditu-anno-source",
-        layer = "cia_w",
-        key = key
-    )
+    val tiandituAnnotationSource = TdtSourceBuilder()
+        .withId("tianditu-anno-source")
+        .withLayer("cia_w")
+        .withKey(key)
+        .build()
 
     maplibreMap.setStyle(
         Style.Builder()
-//            .withSource(GeoJsonSource("empty-source", FeatureCollection.fromFeatures(emptyList())))
             .withSource(tiandituSource)
             .withSource(tiandituAnnotationSource)
             .withLayer(
@@ -41,10 +38,8 @@ fun setupTiandituStyle(maplibreMap: MapLibreMap, key: String, callback: () -> Un
             )
             .withLayer(
                 RasterLayer("tianditu-anno-layer", "tianditu-anno-source")
-//                    .withProperties(PropertyFactory.rasterOpacity(0.3f))
             )
     ) {
-        callback()
     }
 
 }

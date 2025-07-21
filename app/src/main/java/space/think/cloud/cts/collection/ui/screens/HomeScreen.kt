@@ -33,7 +33,6 @@ private val HOME_LEVEL_ROUTES: List<TopLevelRoute> = listOf(Project, Dashboard, 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
     mainLevelRouteStack: TopLevelBackStack<Any>,
     topLevelBackStack: TopLevelBackStack<Any>,
 ) {
@@ -66,8 +65,10 @@ fun HomeScreen(
     ) { paddingValue ->
 
         Box(
-            modifier = Modifier.padding(paddingValue).background(color = MaterialTheme.colorScheme.background)
-        ){
+            modifier = Modifier
+                .padding(paddingValue)
+                .background(color = MaterialTheme.colorScheme.background)
+        ) {
             NavDisplay(
                 backStack = topLevelBackStack.backStack,
                 onBack = { topLevelBackStack.removeLast() },
@@ -75,16 +76,21 @@ fun HomeScreen(
                     entry<Project> {
                         ProjectScreen(
                             modifier = Modifier,
-                        ){
+                        ) {
                             // 切换到任务列表中
-                            mainLevelRouteStack.addTopLevel(TaskList(dataTableName = it.id))
+                            mainLevelRouteStack.addTopLevel(
+                                TaskList(
+                                    projectId = it.id,
+                                    dataTableName = it.dataTableName
+                                )
+                            )
                         }
                     }
                     entry<Dashboard> {
-                        DashboardScreen(modifier = Modifier,)
+                        DashboardScreen(modifier = Modifier)
                     }
                     entry<Me> {
-                        ProfileScreen(modifier = Modifier,){
+                        ProfileScreen(modifier = Modifier) {
                             // 切换到登录页
                             mainLevelRouteStack.addTopLevel(Login)
                         }

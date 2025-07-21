@@ -29,7 +29,6 @@ fun MainScreen(
         entryProvider = entryProvider {
             entry<Home> {
                 HomeScreen(
-                    modifier = modifier,
                     mainLevelRouteStack = mainLevelRouteStack,
                     topLevelBackStack = topLevelBackStack,
                 )
@@ -44,8 +43,9 @@ fun MainScreen(
             }
             entry<TaskMapView> {
                 TaskMapViewScreen(
-                    it.dataTableName,
-                    it.taskItem
+                    projectId = it.projectId,
+                    dataTableName = it.dataTableName,
+                    taskItem = it.taskItem
                 ) {
                     mainLevelRouteStack.removeLast()
                 }
@@ -57,7 +57,13 @@ fun MainScreen(
                         mainLevelRouteStack.removeLast()
                     }
                 ) { dataTableName, taskItem ->
-                    mainLevelRouteStack.addTopLevel(TaskMapView(dataTableName, taskItem))
+                    mainLevelRouteStack.addTopLevel(
+                        TaskMapView(
+                            projectId = it.projectId,
+                            dataTableName = dataTableName,
+                            taskItem
+                        )
+                    )
                 }
             }
         }

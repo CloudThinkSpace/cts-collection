@@ -13,6 +13,7 @@ data class ProjectData(
     val id: String,
     val title: String,
     val subTitle: String,
+    val dataTableName: String,
     val type: Int,
     val status: Int,
 )
