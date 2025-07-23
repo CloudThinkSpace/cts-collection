@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -32,19 +33,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.maplibre.android.annotations.Marker
+import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.style.expressions.Expression
+import org.maplibre.geojson.Feature
 import space.think.cloud.cts.collection.R
+import space.think.cloud.cts.collection.taskItemToFeature
 import space.think.cloud.cts.collection.viewmodel.ProjectLayerViewModel
 import space.think.cloud.cts.collection.viewmodel.TaskViewModel
-import space.think.cloud.cts.common.gis.CtsMarker
 import space.think.cloud.cts.common.gis.MapLibreMapController
 import space.think.cloud.cts.common.gis.MapLibreMapView
 import space.think.cloud.cts.common.gis.utils.MapNavigationUtil
 import space.think.cloud.cts.common.gis.utils.TransformUtils
 import space.think.cloud.cts.lib.ui.form.MapBottomSheet
 import space.think.cloud.cts.lib.ui.task.TaskItem
+
+//import space.think.cloud.cts.collection.fromTaskItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +82,8 @@ fun TaskMapViewScreen(
         mutableStateOf(null)
     }
 
+    var loadingIndex by remember { mutableIntStateOf(0) }
+
     val scope = rememberCoroutineScope()
 
     // 监听返回键
@@ -84,52 +93,63 @@ fun TaskMapViewScreen(
     }
 
     // 图层查询结果处理
-    LaunchedEffect(projectLayers) {
-        if (projectLayers.isNotEmpty()) {
-            projectLayers.forEach {
-                mapLibreMapController?.addLayer(it.name, it.url)
-            }
-        }
-    }
-
-    LaunchedEffect(taskList) {
-        if (taskList.isNotEmpty()) {
-            val bounds = mutableListOf<LatLng>()
-            // 任务标注
-            taskList.forEach { it ->
-                val ctsMarker = CtsMarker(
-                    lon = it.lon.toDouble(),
-                    lat = it.lat.toDouble(),
-                    title = it.name,
-                    description = "",
-                    icon = if (it.status == 0) R.drawable.location_blue else R.drawable.location_red
-                )
-                bounds.add(LatLng(ctsMarker.lat, ctsMarker.lon))
-                val marker: Marker? = mapLibreMapController?.addMarker(ctsMarker)
-                if (it.code == taskItem?.code) {
-                    currentMarker = marker
-
+    LaunchedEffect(projectLayers, taskList) {
+        loadingIndex++
+        if (loadingIndex == 3) {
+            if (projectLayers.isNotEmpty()) {
+                projectLayers.forEach {
+                    mapLibreMapController?.addLayer(it.name, it.url)
                 }
             }
-            if (taskItem == null) {
-                // 缩放到地图
-                mapLibreMapController?.animateToBounds(bounds)
-            } else {
 
-                currentMarker?.let { marker ->
-                    // 移动到点位
-                    mapLibreMapController?.animateToLatLng(
-                        LatLng(
-                            marker.position.latitude,
-                            marker.position.longitude
-                        ),
-                        zoom = 14.0
-                    ) {
-                        mapLibreMapController?.showInfoWindow(marker)
+            if (taskList.isNotEmpty()) {
+                val bounds = mutableListOf<LatLng>()
+                val features = mutableListOf<Feature>()
+                // 任务标注
+                taskList.forEach { it ->
+                    val lat = it.lat.toDouble()
+                    val lon = it.lon.toDouble()
+                    // 收集坐标
+                    bounds.add(LatLng(lat, lon))
+                    if (it.code == taskItem?.code) {
+                        currentMarker = Marker(MarkerOptions().apply {
+                            this.position = LatLng(lat, lon)
+                            title = it.code
+                        })
+                    }
+                    val feature = taskItemToFeature(it)
+                    features.add(feature)
+                }
+                // 添加默认样式图层
+                mapLibreMapController?.addSymbolLayer(
+                    expression = Expression.match(
+                        Expression.get("status"),
+                        Expression.literal("marker-blue"),
+                        Expression.stop(0, "marker-blue"),
+                        Expression.stop(1, "marker-red")
+                    ),
+                    features = features,
+                )
+                if (taskItem == null) {
+                    // 缩放到地图
+                    mapLibreMapController?.animateToBounds(bounds)
+                } else {
+
+                    currentMarker?.let { marker ->
+                        // 移动到点位
+                        mapLibreMapController?.animateToLatLng(
+                            LatLng(
+                                marker.position.latitude,
+                                marker.position.longitude
+                            ),
+                            zoom = 14.0
+                        ) {
+                            mapLibreMapController?.showInfoWindow(marker)
+                        }
                     }
                 }
-            }
 
+            }
         }
 
     }
@@ -178,6 +198,9 @@ fun TaskMapViewScreen(
             }
         ) {
             mapLibreMapController = it
+            // 添加图标
+            mapLibreMapController?.addImage("marker-blue", R.drawable.location_blue)
+            mapLibreMapController?.addImage("marker-red", R.drawable.location_red)
 
             scope.launch {
                 val deferred1 = async {
@@ -188,8 +211,7 @@ fun TaskMapViewScreen(
                     projectLayerViewModel.getByProjectId(projectId) { }
                 }
                 // 等待两个协程都完成
-                deferred1.await()
-                deferred2.await()
+                awaitAll(deferred1, deferred2)
 
             }
         }
