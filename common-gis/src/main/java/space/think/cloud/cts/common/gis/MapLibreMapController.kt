@@ -16,6 +16,7 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapLibreMap.CancelableCallback
 import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.Layer
+import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.RasterLayer
 import org.maplibre.android.style.layers.SymbolLayer
@@ -149,6 +150,10 @@ class MapLibreMapController(
         return BitmapFactory.decodeResource(context.resources, drawableResId)
     }
 
+    fun toggleLayer(layerName: String, visible: Boolean) {
+        mapLibreMap.style?.getLayer("$layerName-layer")?.setVisible(visible)
+    }
+
     fun setCameraPosition(cameraPosition: CameraPosition) {
         mapLibreMap.cameraPosition = cameraPosition
     }
@@ -236,6 +241,14 @@ class MapLibreMapController(
         } else {
             mapLibreMap.selectMarker(marker)
         }
+    }
+
+    fun Layer.setVisible(visible: Boolean) {
+        setProperties(
+            PropertyFactory.visibility(
+                if (visible) Property.VISIBLE else Property.NONE
+            )
+        )
     }
 
 

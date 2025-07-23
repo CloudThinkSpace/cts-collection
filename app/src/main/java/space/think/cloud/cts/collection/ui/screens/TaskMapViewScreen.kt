@@ -3,12 +3,21 @@
 package space.think.cloud.cts.collection.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -48,10 +58,9 @@ import space.think.cloud.cts.common.gis.MapLibreMapController
 import space.think.cloud.cts.common.gis.MapLibreMapView
 import space.think.cloud.cts.common.gis.utils.MapNavigationUtil
 import space.think.cloud.cts.common.gis.utils.TransformUtils
+import space.think.cloud.cts.lib.ui.CheckBoxItem
 import space.think.cloud.cts.lib.ui.form.MapBottomSheet
 import space.think.cloud.cts.lib.ui.task.TaskItem
-
-//import space.think.cloud.cts.collection.fromTaskItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,8 +82,11 @@ fun TaskMapViewScreen(
         mutableStateOf(null)
     }
 
-    val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember { mutableStateOf(false) }
+    val operationSheetState = rememberModalBottomSheetState()
+    val layerSheetState = rememberModalBottomSheetState()
+    // 操作bottomSheet
+    var operationBottomSheet by remember { mutableStateOf(false) }
+    var layerBottomSheet by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -178,10 +190,12 @@ fun TaskMapViewScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-
+                        scope.launch {
+                            layerBottomSheet = true
+                        }
                     }) {
                         Icon(
-                            imageVector = Icons.Filled.Map,
+                            imageVector = Icons.Default.Layers,
                             contentDescription = "Localized description",
                             tint = Color.White
                         )
@@ -194,7 +208,7 @@ fun TaskMapViewScreen(
             modifier = Modifier.padding(paddingValues),
             onInfoWindowClick = {
                 currentMarker = it
-                showBottomSheet = true
+                operationBottomSheet = true
             }
         ) {
             mapLibreMapController = it
@@ -217,17 +231,17 @@ fun TaskMapViewScreen(
         }
     }
 
-    if (showBottomSheet) {
+    if (operationBottomSheet) {
         ModalBottomSheet(
             shape = RoundedCornerShape(topStart = 5.dp, topEnd = 5.dp),
             onDismissRequest = {
-                showBottomSheet = false
+                operationBottomSheet = false
             },
-            sheetState = sheetState
+            sheetState = operationSheetState
         ) {
             MapBottomSheet(
                 onGaodeNavigation = {
-                    showBottomSheet = false
+                    operationBottomSheet = false
 
                     currentMarker?.apply {
 
@@ -246,7 +260,7 @@ fun TaskMapViewScreen(
 
                 },
                 onBaiduNavigation = {
-                    showBottomSheet = false
+                    operationBottomSheet = false
                     currentMarker?.apply {
                         // 坐标转换，转成百度坐标
                         val latLng = TransformUtils.wgs84ToBd09(
@@ -265,6 +279,71 @@ fun TaskMapViewScreen(
             ) {
                 // 打开表单页
 
+
+            }
+        }
+    }
+
+    if (layerBottomSheet) {
+        ModalBottomSheet(
+            shape = RoundedCornerShape(topStart = 5.dp, topEnd = 5.dp),
+            onDismissRequest = {
+                layerBottomSheet = false
+            },
+            sheetState = layerSheetState,
+            dragHandle = {}
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .background(
+                        color = Color.White,
+                        shape = RoundedCornerShape(topStart = 5.dp, topEnd = 5.dp)
+                    )
+                    .fillMaxHeight(0.6f)
+                    .padding(5.dp)
+            ) {
+
+                item {
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "图层管理",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        IconButton(onClick = {
+                            scope.launch {
+                                layerSheetState.hide()
+                            }.invokeOnCompletion {
+                                if (!layerSheetState.isVisible) {
+                                    layerBottomSheet = false
+                                }
+                            }
+                        }) {
+                            Icon(Icons.Default.Close, contentDescription = null)
+                        }
+                    }
+                    Divider(thickness = 0.5.dp)
+                }
+
+                itemsIndexed(
+                    items = projectLayers
+                )
+                { _, item ->
+
+                    CheckBoxItem(
+                        text = item.name,
+                        checked = item.checked.value,
+                        onCheckedChange = {
+                            item.checked.value = it
+                            mapLibreMapController?.toggleLayer(item.name, it)
+                        }
+                    )
+
+                }
 
             }
         }
