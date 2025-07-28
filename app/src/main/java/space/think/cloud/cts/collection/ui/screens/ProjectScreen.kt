@@ -64,6 +64,8 @@ fun ProjectScreen(
         if (token.isNotEmpty()) {
             isLogin = true
             projectViewModel.search(searchValue)
+        }else{
+            projectViewModel.reset()
         }
     }
 
