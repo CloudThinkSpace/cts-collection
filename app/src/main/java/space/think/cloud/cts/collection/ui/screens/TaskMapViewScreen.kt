@@ -219,7 +219,9 @@ fun TaskMapViewScreen(
             scope.launch {
                 val deferred1 = async {
                     // 查询所有任务
-                    taskViewModel.search(dataTableName, "")
+                    taskViewModel.search(dataTableName, ""){
+
+                    }
                 }
                 val deferred2 = async {
                     projectLayerViewModel.getByProjectId(projectId) { }

@@ -37,7 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -259,9 +258,22 @@ fun LoginScreen(
                                 onClick = {
                                     isLoading = true
                                     // 登录
-                                    viewModel.login(username, password) {
+                                    viewModel.login(username, password, {
+                                        Toast.makeText(
+                                            context,
+                                            "登录失败，用户或者密码错误！",
+                                            Toast.LENGTH_LONG
+                                        )
+                                            .show()
+                                        isLoading = false
+                                        viewModel.reset()
+                                    }) {
                                         scope.launch {
                                             dataStoreManage.saveUser(it)
+                                            Toast.makeText(context, "登录成功", Toast.LENGTH_LONG)
+                                                .show()
+                                            isLoading = false
+                                            viewModel.reset()
                                             onBack()
                                         }
                                     }
@@ -286,21 +298,6 @@ fun LoginScreen(
                         .size(50.dp),
                     color = Color.White
                 )
-            }
-
-            if (viewModel.data.collectAsState().value != null) {
-                Toast.makeText(context, "登录成功", Toast.LENGTH_LONG).show()
-                isLoading = false
-                viewModel.reset()
-            }
-
-
-
-            if (viewModel.error.collectAsState().value != null) {
-                Toast.makeText(context, viewModel.error.collectAsState().value, Toast.LENGTH_LONG)
-                    .show()
-                isLoading = false
-                viewModel.reset()
             }
 
         }

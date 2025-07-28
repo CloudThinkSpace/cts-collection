@@ -17,16 +17,18 @@ open class BaseViewModel : ViewModel() {
     protected fun <T> launch(
         block: suspend () -> Result<T>,
         errorFun: ((String) -> Unit)? = null,
+        onCallBack: (() -> Unit)? = null,
         successFun: (T?) -> Unit
     ) =
         viewModelScope.launch {
             val result = withContext(Dispatchers.IO) {
                 try {
                     block()
-                }catch (e: Exception){
-                    Result(500, e.toString(),null)
+                } catch (e: Exception) {
+                    Result(500, e.toString(), null)
                 }
             }
+            onCallBack?.invoke()
             if (result.code != 200) {
                 result.msg.apply {
                     errorFun?.invoke(this)

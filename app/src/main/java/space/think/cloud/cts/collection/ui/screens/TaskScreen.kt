@@ -57,9 +57,11 @@ fun TaskScreen(
 
     LaunchedEffect(searchValue) {
         isLoading = true
-        taskViewModel.search(dataTableName, searchValue)
-        isLoading = false
+        taskViewModel.search(dataTableName, searchValue) {
+            isLoading = false
+        }
     }
+
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 

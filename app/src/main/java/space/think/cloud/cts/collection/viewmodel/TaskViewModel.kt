@@ -16,7 +16,7 @@ class TaskViewModel : BaseViewModel() {
 
     private val taskService = RetrofitClient.createService<TaskService>()
 
-    fun search(dataTableName: String, searchValue: String) = launch(
+    fun search(dataTableName: String, searchValue: String, onResult: () -> Unit) = launch(
         {
             taskService.search(
                 RequestTask(
@@ -26,6 +26,9 @@ class TaskViewModel : BaseViewModel() {
                 ),
                 dataTableName = dataTableName,
             )
+        },
+        onCallBack = {
+            onResult()
         }
     ) {
         it?.let { page ->

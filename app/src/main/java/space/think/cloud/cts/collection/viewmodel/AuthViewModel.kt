@@ -17,9 +17,17 @@ class AuthViewModel : BaseViewModel() {
 
     private val authService = RetrofitClient.createService<AuthService>()
 
-    fun login(username: String, password: String, success: (ResponseAuth) -> Unit) = launch(
+    fun login(
+        username: String,
+        password: String,
+        onError: () -> Unit,
+        success: (ResponseAuth) -> Unit,
+    ) = launch(
         {
             authService.login(RequestLogin(username, password))
+        },
+        {
+            onError()
         }
     ) {
         it?.let { auth ->
@@ -36,7 +44,7 @@ class AuthViewModel : BaseViewModel() {
 
     }
 
-    override fun reset(){
+    override fun reset() {
         super.reset()
         _posts.value = null
     }
