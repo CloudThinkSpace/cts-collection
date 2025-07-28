@@ -1,30 +1,14 @@
 package space.think.cloud.cts.lib.network
 
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import android.content.Context
+import kotlinx.coroutines.flow.Flow
 import space.think.cloud.cts.common_datastore.DataStoreUtil
 import space.think.cloud.cts.common_datastore.PreferencesKeys
 
-class TokenManager(private val dataStoreUtil: DataStoreUtil) {
-    private var cachedToken: String? = null
-    private val mutex = Mutex()
+class TokenManager(private val context: Context) {
 
-    suspend fun getToken(): String = mutex.withLock {
-        cachedToken ?: dataStoreUtil.getData(PreferencesKeys.TOKEN_KEY, "").first().also { cachedToken = it }
-    }
+    private var dataStoreUtil: DataStoreUtil = DataStoreUtil(context)
 
-    suspend fun updateToken(newToken: String) {
-        mutex.withLock {
-            cachedToken = newToken
-            dataStoreUtil.saveData(PreferencesKeys.TOKEN_KEY, newToken)
-        }
-    }
-
-    suspend fun clearToken() {
-        mutex.withLock {
-            cachedToken = null
-            dataStoreUtil.removeData(PreferencesKeys.TOKEN_KEY)
-        }
-    }
+    // 获取存储的 token
+    val tokenFlow: Flow<String?> = dataStoreUtil.getData(PreferencesKeys.TOKEN_KEY,"")
 }
