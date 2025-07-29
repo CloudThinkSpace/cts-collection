@@ -25,10 +25,11 @@ class ProjectLayerViewModel : BaseViewModel() {
     /**
      * <h2>根据项目编号获取项目图层</h2>
      */
-    fun getByProjectId(projectId: String, error: (String) -> Unit) = launch(
+    fun getByProjectId(projectId: String, onResult: () -> Unit) = launch(
         {
             projectLayerService.getByProjectId(projectId)
-        }
+        },
+        onCallBack = onResult
     ) {
         it?.apply {
             _data.value = map { projectLayer ->

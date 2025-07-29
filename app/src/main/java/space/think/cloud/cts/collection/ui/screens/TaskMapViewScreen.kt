@@ -106,8 +106,7 @@ fun TaskMapViewScreen(
 
     // 图层查询结果处理
     LaunchedEffect(projectLayers, taskList) {
-        loadingIndex++
-        if (loadingIndex == 3) {
+        if (loadingIndex == 2) {
             if (projectLayers.isNotEmpty()) {
                 projectLayers.forEach {
                     mapLibreMapController?.addLayer(it.name, it.url)
@@ -219,12 +218,14 @@ fun TaskMapViewScreen(
             scope.launch {
                 val deferred1 = async {
                     // 查询所有任务
-                    taskViewModel.search(dataTableName, ""){
-
+                    taskViewModel.search(dataTableName, "") {
+                        loadingIndex++
                     }
                 }
                 val deferred2 = async {
-                    projectLayerViewModel.getByProjectId(projectId) { }
+                    projectLayerViewModel.getByProjectId(projectId) {
+                        loadingIndex++
+                    }
                 }
                 // 等待两个协程都完成
                 awaitAll(deferred1, deferred2)
