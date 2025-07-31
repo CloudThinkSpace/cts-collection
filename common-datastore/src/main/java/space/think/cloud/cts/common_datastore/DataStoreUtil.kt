@@ -53,8 +53,8 @@ class DataStoreUtil(private val context: Context) {
 // 定义常用的 Preferences Key
 object PreferencesKeys {
 
-    val LON_KEY = floatPreferencesKey("lon_key")
-    val LAT_KEY = floatPreferencesKey("lat_key")
+    val LON_KEY = doublePreferencesKey("lon_key")
+    val LAT_KEY = doublePreferencesKey("lat_key")
 
     val TOKEN_KEY = stringPreferencesKey("token_key")
 

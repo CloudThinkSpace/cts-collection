@@ -21,7 +21,6 @@ class EnhancedNativeLocationHelper(private val context: Context) {
 
     // 超时处理
     private val handler = Handler(Looper.getMainLooper())
-    private var timeoutRunnable: Runnable? = null
 
     // 定位监听器
     private var locationListener: LocationListener? = null
@@ -35,7 +34,8 @@ class EnhancedNativeLocationHelper(private val context: Context) {
         val desiredAccuracy: Float = 50f,   // 期望精度(米)
         val useGPS: Boolean = true,         // 是否使用GPS
         val useNetwork: Boolean = true,     // 是否使用网络定位
-        val usePassive: Boolean = false     // 是否使用被动定位
+        val usePassive: Boolean = false,     // 是否使用被动定位
+        val continuousUpdates: Boolean = true // 新增参数，默认关闭
     )
 
     // 定位状态
@@ -110,27 +110,16 @@ class EnhancedNativeLocationHelper(private val context: Context) {
         // 清除之前的监听
         stopLocationUpdates()
 
-        // 设置超时
-        timeoutRunnable = Runnable {
-            stopLocationUpdates()
-            onStateChange(LocationState.Timeout)
-        }.also {
-            handler.postDelayed(it, config.timeout)
-        }
-
         onStateChange(LocationState.Searching)
 
         // 主定位监听器
         locationListener = object : LocationListener {
             override fun onLocationChanged(location: Location) {
-                if (location.accuracy <= config.desiredAccuracy) {
+                if (!config.continuousUpdates && location.accuracy <= config.desiredAccuracy) {
                     // 达到期望精度，停止更新
                     stopLocationUpdates()
-                    onStateChange(LocationState.Located(location))
-                } else {
-                    // 精度不够，继续等待更精确的位置
-                    onStateChange(LocationState.Located(location))
                 }
+                onStateChange(LocationState.Located(location))
             }
 
             override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
@@ -200,10 +189,6 @@ class EnhancedNativeLocationHelper(private val context: Context) {
 
     // 停止所有位置更新
     fun stopLocationUpdates() {
-        timeoutRunnable?.let {
-            handler.removeCallbacks(it)
-            timeoutRunnable = null
-        }
 
         locationListener?.let {
             locationManager.removeUpdates(it)

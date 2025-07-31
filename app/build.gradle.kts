@@ -72,6 +72,7 @@ dependencies {
 //    implementation(libs.androidx.material3.navigation3)
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.maplibre)
+    implementation(libs.androidx.work)
     implementation(project(":ui"))
     implementation(project(":network"))
     implementation(project(":form"))
