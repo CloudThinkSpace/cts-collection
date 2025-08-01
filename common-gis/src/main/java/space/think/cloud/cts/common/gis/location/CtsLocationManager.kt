@@ -116,11 +116,6 @@ class CtsLocationManager(private val context: ComponentActivity) {
                     syncScope.launch {
                         saveLocation(state.location)
                     }
-                    Toast.makeText(
-                        context,
-                        "位置持续更新",
-                        Toast.LENGTH_SHORT
-                    ).show()
                 }
 
                 is EnhancedNativeLocationHelper.LocationState.Timeout,
@@ -182,6 +177,14 @@ class CtsLocationManager(private val context: ComponentActivity) {
     private suspend fun saveLocation(location: Location) {
         dataStoreUtil.saveData(PreferencesKeys.LON_KEY, location.longitude)
         dataStoreUtil.saveData(PreferencesKeys.LAT_KEY, location.latitude)
+        // 是否有方位信息
+        if (location.hasBearing()){
+            dataStoreUtil.saveData(PreferencesKeys.BEARING_KEY, location.bearing)
+        }
+        // 是否有高程信息
+        if (location.hasAltitude()){
+            dataStoreUtil.saveData(PreferencesKeys.ALTITUDE_KEY, location.altitude)
+        }
     }
 
 

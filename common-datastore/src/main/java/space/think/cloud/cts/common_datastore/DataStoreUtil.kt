@@ -53,13 +53,23 @@ class DataStoreUtil(private val context: Context) {
 // 定义常用的 Preferences Key
 object PreferencesKeys {
 
-    val LON_KEY = doublePreferencesKey("lon_key")
-    val LAT_KEY = doublePreferencesKey("lat_key")
-
-    val TOKEN_KEY = stringPreferencesKey("token_key")
-
-    val NICKNAME_KEY = stringPreferencesKey("nickname_key")
-    val USERNAME_KEY = stringPreferencesKey("username_key")
-    val PHONE_KEY = stringPreferencesKey("phone_key")
+    // 经度信息
+    val LON_KEY = doublePreferencesKey("cloud_think_space_lon_key")
+    // 纬度信息
+    val LAT_KEY = doublePreferencesKey("cloud_think_space_lat_key")
+    // 高程信息
+    val ALTITUDE_KEY = doublePreferencesKey("cloud_think_space_altitude_key")
+    // 方位角信息
+    val BEARING_KEY = floatPreferencesKey("cloud_think_space_bearing_key")
+    // token信息
+    val TOKEN_KEY = stringPreferencesKey("cloud_think_space_token_key")
+    // 昵称信息
+    val NICKNAME_KEY = stringPreferencesKey("cloud_think_space_nickname_key")
+    // 用户信息
+    val USERNAME_KEY = stringPreferencesKey("cloud_think_space_username_key")
+    // 电话信息
+    val PHONE_KEY = stringPreferencesKey("cloud_think_space_phone_key")
+    // 邮箱信息
+    val EMAIL_KEY = stringPreferencesKey("cloud_think_space_email_key")
 
 }
