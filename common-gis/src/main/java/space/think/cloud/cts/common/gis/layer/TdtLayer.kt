@@ -43,3 +43,25 @@ fun setupTiandituStyle(maplibreMap: MapLibreMap, key: String) {
     }
 
 }
+fun addTdtLayers(style: Style, key: String) {
+
+    // 影像图层源
+    val tiandituSource = TdtSourceBuilder()
+        .withId("tianditu-source")
+        .withLayer("img_w")
+        .withKey(key)
+        .build()
+
+    val tiandituAnnotationSource = TdtSourceBuilder()
+        .withId("tianditu-anno-source")
+        .withLayer("cia_w")
+        .withKey(key)
+        .build()
+
+    style.addSource(tiandituSource)
+    style.addSource(tiandituAnnotationSource)
+
+    style.addLayer(RasterLayer("tianditu-layer", "tianditu-source"))
+    style.addLayer(RasterLayer("tianditu-anno-layer", "tianditu-anno-source"))
+
+}
