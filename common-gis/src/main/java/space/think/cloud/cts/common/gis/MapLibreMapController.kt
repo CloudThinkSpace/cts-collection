@@ -4,85 +4,49 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.PointF
-import android.net.Uri
 import org.maplibre.android.annotations.IconFactory
 import org.maplibre.android.annotations.Marker
 import org.maplibre.android.annotations.MarkerOptions
-import org.maplibre.android.camera.CameraPosition
-import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
-import org.maplibre.android.location.LocationComponentActivationOptions
 import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.maps.MapLibreMap.CancelableCallback
-import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression
-import org.maplibre.android.style.layers.BackgroundLayer
-import org.maplibre.android.style.layers.Layer
-import org.maplibre.android.style.layers.Property
-import org.maplibre.android.style.layers.PropertyFactory
-import org.maplibre.android.style.layers.RasterLayer
-import org.maplibre.android.style.layers.SymbolLayer
-import org.maplibre.android.style.sources.GeoJsonSource
-import org.maplibre.android.style.sources.Source
 import org.maplibre.geojson.Feature
-import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 import space.think.cloud.cts.common.gis.layer.addTdtLayers
-import space.think.cloud.cts.common.gis.source.cts.RasterSourceBuilder
 
 @SuppressLint("MissingPermission")
 class MapLibreMapController(
     val context: Context,
     val maplibreMap: MapLibreMap
-) : MapController {
+) {
 
+    // 默认点位图层名
     private val defaultMarkerSymbolName = "cts-marker"
 
+    // 被选中的图标
+    private var selectMarker: CtsMarker? = null
+
+    // 地图管理器
+    private val mapLibreManager = MapLibreManager(context, maplibreMap)
+
+    // 全图范围
+    private var latLngBounds: LatLngBounds? = null
+
     init {
-        // 初始化地图style
-        initStyle{ style ->
+        mapLibreManager.onStyle { style ->
             // 初始化天地图
             addTdtLayers(style, "e6ed3fdaf6ca24a041d8dcb69ab279f2")
-            // 初始化位置图标
-            initLocation(style)
         }
-
+        // 显示定位
+        mapLibreManager.setLocationEnable(true)
         // 添加地图点击事件
-        maplibreMap.addOnMapClickListener {
-            handleMapClick(maplibreMap.projection.toScreenLocation(it))
-            true
+        mapLibreManager.addMapClickListener { features ->
+            handleMapClick(features)
         }
     }
 
-    private fun initStyle(onStyle: (Style) -> Unit) {
-        maplibreMap.setStyle(
-            Style.Builder()
-                .withLayer(
-                    BackgroundLayer("background-layer")
-                        .withProperties(
-                            PropertyFactory.backgroundColor("#87CEF0"), // 设置背景色
-                            PropertyFactory.backgroundOpacity(1.0f)
-                        )
-                )
-        ) {
-            onStyle(it)
-        }
-    }
-
-    private fun initLocation(style: Style){
-        val locationComponent = maplibreMap.locationComponent
-        locationComponent.activateLocationComponent(
-            LocationComponentActivationOptions.builder(context, style).build()
-        )
-        locationComponent.isLocationComponentEnabled = true
-    }
-
-    private fun handleMapClick(clickPoint: PointF) {
-        // 1. 获取点击位置的要素
-        val features =
-            maplibreMap.queryRenderedFeatures(clickPoint, "$defaultMarkerSymbolName-symbol-layer")
+    private fun handleMapClick(features: List<Feature>) {
 
         if (features.isNotEmpty()) {
             // 2. 获取第一个要素的属性
@@ -95,21 +59,23 @@ class MapLibreMapController(
             val latLng = LatLng(point.latitude(), point.longitude())
 
             // 4. 显示自定义InfoWindow
-            val ctsMarker = CtsMarker(
+            selectMarker = CtsMarker(
                 lon = latLng.longitude,
                 lat = latLng.latitude,
                 title = title,
                 description = "",
                 icon = R.drawable.location_blue
-            )
-            showInfoWindow(ctsMarker)
+            ).apply {
+                showInfoWindow(this)
+            }
+
         } else {
             // 点击了非标记区域，隐藏InfoWindow
             hideInfoWindow()
         }
     }
 
-    override fun <T> addMarker(marker: CtsMarker): T {
+    fun <T> addMarker(marker: CtsMarker): T {
         val bitmap = drawableToBitmap(context, marker.icon)
         val markerIcon = IconFactory.getInstance(context).fromBitmap(bitmap)
         val markerOptions = MarkerOptions().apply {
@@ -121,19 +87,8 @@ class MapLibreMapController(
         return maplibreMap.addMarker(markerOptions) as T
     }
 
-    override fun getExtent() {
-        TODO("Not yet implemented")
-    }
-
-    override fun addLayer(name: String, uri: String) {
-
-        val rasterSource = RasterSourceBuilder()
-            .withId("$name-source")
-            .withUri(Uri.decode(uri))
-            .build()
-
-        maplibreMap.style?.addSource(rasterSource)
-        maplibreMap.style?.addLayer(RasterLayer("$name-layer", "$name-source"))
+    fun addLayer(name: String, uri: String) {
+        mapLibreManager.addRasterLayer(name, uri)
     }
 
     fun addSymbolLayer(
@@ -141,33 +96,13 @@ class MapLibreMapController(
         expression: Expression,
         features: List<Feature>
     ) {
-        // 构造geoJson数据源
-        val source = GeoJsonSource("$name-source", FeatureCollection.fromFeatures(features))
-        // 添加数据源
-        addSource(source)
-        // 创建样式图层
-        val layer = SymbolLayer("$name-symbol-layer", "$name-source")
-            .withProperties(
-                PropertyFactory.iconSize(1f),
-                PropertyFactory.iconImage(expression),
-                PropertyFactory.iconAllowOverlap(true),
-                PropertyFactory.iconIgnorePlacement(true)
-            )
-        // 添加图层
-        addLayer(layer)
-    }
-
-    fun addSource(source: Source) {
-        maplibreMap.style?.addSource(source)
-    }
-
-    fun addLayer(layer: Layer) {
-        maplibreMap.style?.addLayer(layer)
+        mapLibreManager.addSymbolLayer(name, expression, features) {
+            latLngBounds = it
+        }
     }
 
     fun addImage(name: String, imageRes: Int) {
-        val bitmap = drawableToBitmap(context, imageRes)
-        maplibreMap.style?.addImage(name, bitmap)
+        mapLibreManager.addImage(name, imageRes)
     }
 
     fun onInfoWindowClickListener(onClick: (Marker) -> Unit) {
@@ -183,16 +118,8 @@ class MapLibreMapController(
         return BitmapFactory.decodeResource(context.resources, drawableResId)
     }
 
-    fun toggleLayer(layerName: String, visible: Boolean) {
-        maplibreMap.style?.getLayer("$layerName-layer")?.setVisible(visible)
-    }
-
-    fun setCameraPosition(cameraPosition: CameraPosition) {
-        maplibreMap.cameraPosition = cameraPosition
-    }
-
-    fun animateCamera(cameraPosition: CameraPosition, delay: Int = 2000) {
-        maplibreMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), delay)
+    fun toggleLayer(layerId: String, visible: Boolean) {
+        mapLibreManager.setLayerVisible(layerId, visible)
     }
 
     fun animateToLatLng(
@@ -201,23 +128,7 @@ class MapLibreMapController(
         delay: Int = 2000,
         onFinish: (() -> Unit)? = null
     ) {
-        // 移动到点位
-        val cameraPosition = CameraPosition.Builder()
-            .target(latLng)
-            .zoom(zoom)
-            .build()
-
-        maplibreMap.animateCamera(
-            CameraUpdateFactory.newCameraPosition(cameraPosition), delay,
-            object : CancelableCallback {
-                override fun onCancel() {
-                }
-
-                override fun onFinish() {
-                    onFinish?.invoke()
-                }
-            }
-        )
+        mapLibreManager.animateToLatLng(latLng, zoom, delay, onFinish)
     }
 
     fun animateToBounds(
@@ -225,22 +136,8 @@ class MapLibreMapController(
         delay: Int = 2000,
         onFinish: (() -> Unit)? = null
     ) {
-        maplibreMap.getCameraForLatLngBounds(LatLngBounds.fromLatLngs(bounds))?.let {
-            val newCameraPosition = CameraPosition.Builder()
-                .target(it.target)
-                .zoom(it.zoom - 0.5)
-                .build()
-            maplibreMap.animateCamera(
-                CameraUpdateFactory.newCameraPosition(newCameraPosition), delay,
-                object : CancelableCallback {
-                    override fun onCancel() {
-                    }
-
-                    override fun onFinish() {
-                        onFinish?.invoke()
-                    }
-                }
-            )
+        mapLibreManager.animateToBounds(bounds, delay) {
+            onFinish?.invoke()
         }
     }
 
@@ -266,23 +163,5 @@ class MapLibreMapController(
     fun hideInfoWindow() {
         maplibreMap.deselectMarkers()
     }
-
-    // 切换显示状态
-    fun toggleInfoWindow(marker: Marker) {
-        if (marker.isInfoWindowShown) {
-            maplibreMap.deselectMarker(marker)
-        } else {
-            maplibreMap.selectMarker(marker)
-        }
-    }
-
-    fun Layer.setVisible(visible: Boolean) {
-        setProperties(
-            PropertyFactory.visibility(
-                if (visible) Property.VISIBLE else Property.NONE
-            )
-        )
-    }
-
 
 }
