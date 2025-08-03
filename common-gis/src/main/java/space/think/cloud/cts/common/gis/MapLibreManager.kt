@@ -277,6 +277,8 @@ class MapLibreManager(
         isZoom: Boolean = true,
         onFinish: ((LatLngBounds) -> Unit)? = null
     ) {
+        // 如果图层和数据源存在删除
+        removeSymbolLayer(name)
         // 构造geoJson数据源
         val source = GeoJsonSource("$name-symbol-source", FeatureCollection.fromFeatures(features))
         // 添加数据源
@@ -310,6 +312,52 @@ class MapLibreManager(
             // 移动到指定访问内
             animateToBounds(bounds = data, onFinish = onFinish)
         }
+    }
+
+    /**
+     * 删除图标图层和数据源
+     * @param name 图标名称
+     */
+    fun removeSymbolLayer(name: String) {
+        val layer = style.getLayer("$name-symbol-layer")
+        val source = style.getSource("$name-symbol-source")
+        layer?.let {
+            removeLayer(layer)
+        }
+        source?.let {
+            removeSource(source)
+        }
+    }
+
+    /**
+     * 删除图层
+     * @param layerId 图层编号
+     */
+    fun removeLayer(layerId: String) {
+        style.removeLayer(layerId)
+    }
+    /**
+     * 删除图层
+     * @param layer 图层
+     */
+    fun removeLayer(layer: Layer) {
+        style.removeLayer(layer)
+    }
+
+    /**
+     * 删除数据源
+     * @param sourceId 数据源编号
+     */
+    fun removeSource(sourceId: String) {
+        style.removeSource(sourceId)
+    }
+
+    /**
+     * 删除数据源
+     * @param source 数据源
+     */
+    fun removeSource(source: Source) {
+        style.removeSource(source)
     }
 
     override fun onMapClick(latlng: LatLng): Boolean {

@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -33,7 +34,7 @@ private val HOME_LEVEL_ROUTES: List<TopLevelRoute> = listOf(Project, Dashboard, 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    mainLevelRouteStack: TopLevelBackStack<Any>,
+    backStack: NavBackStack,
     topLevelBackStack: TopLevelBackStack<Any>,
 ) {
 
@@ -78,7 +79,7 @@ fun HomeScreen(
                             modifier = Modifier,
                         ) {
                             // 切换到任务列表中
-                            mainLevelRouteStack.addTopLevel(
+                            backStack.add(
                                 TaskList(
                                     projectId = it.id,
                                     dataTableName = it.dataTableName
@@ -92,7 +93,7 @@ fun HomeScreen(
                     entry<Me> {
                         ProfileScreen(modifier = Modifier) {
                             // 切换到登录页
-                            mainLevelRouteStack.addTopLevel(Login)
+                            backStack.add(Login)
                         }
                     }
                 }

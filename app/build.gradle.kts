@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.compose)
 }
 
@@ -80,6 +81,7 @@ dependencies {
     implementation(project(":common-datastore"))
     implementation(libs.androidx.datastore)
     implementation(project(":common-gis"))
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
