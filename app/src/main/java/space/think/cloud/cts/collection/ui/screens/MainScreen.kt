@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import space.think.cloud.cts.collection.nav.Form
 import space.think.cloud.cts.collection.nav.Help
 import space.think.cloud.cts.collection.nav.Home
 import space.think.cloud.cts.collection.nav.Login
@@ -13,6 +14,7 @@ import space.think.cloud.cts.collection.nav.Project
 import space.think.cloud.cts.collection.nav.TaskList
 import space.think.cloud.cts.collection.nav.TaskMapView
 import space.think.cloud.cts.collection.nav.TopLevelBackStack
+import space.think.cloud.cts.lib.form.FormScreen
 
 /**
  * 该界面是主界面，
@@ -45,9 +47,13 @@ fun MainScreen(
                 TaskMapViewScreen(
                     projectId = it.projectId,
                     dataTableName = it.dataTableName,
-                    taskItem = it.taskItem
+                    taskItem = it.taskItem,
+                    onBack = {
+                        mainLevelRouteStack.removeLast()
+                    }
                 ) {
-                    mainLevelRouteStack.removeLast()
+                    // 导航到表单页面，传入任务编号
+                    mainLevelRouteStack.addTopLevel(Form(it))
                 }
             }
             entry<TaskList> {
@@ -65,6 +71,9 @@ fun MainScreen(
                         )
                     )
                 }
+            }
+            entry<Form> {
+                FormScreen(modifier = modifier, title = "数据采集", code = it.code)
             }
         }
 

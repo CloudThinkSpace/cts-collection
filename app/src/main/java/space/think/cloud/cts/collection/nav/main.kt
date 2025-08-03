@@ -5,6 +5,7 @@ import space.think.cloud.cts.lib.ui.task.TaskItem
 data object Login
 data object Home
 data object Help
+data class Form(val code: String)
 
 data class TaskList(val projectId: String, val dataTableName: String)
 data class TaskMapView(

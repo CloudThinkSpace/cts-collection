@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.viewmodel.compose.viewModel
 import space.think.cloud.cts.lib.form.viewmodel.FormViewModel
 import space.think.cloud.cts.lib.ui.form.widgets.CheckWidget
 import space.think.cloud.cts.lib.ui.form.widgets.DateWidget
@@ -49,7 +50,8 @@ import space.think.cloud.cts.lib.ui.utils.StringUtil
 fun FormScreen(
     modifier: Modifier = Modifier,
     title: String,
-    viewModel: FormViewModel
+    code: String,
+    viewModel: FormViewModel = viewModel()
 ) {
 
     val fields by remember { derivedStateOf { viewModel.fields } }

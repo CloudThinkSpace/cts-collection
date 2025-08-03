@@ -131,7 +131,6 @@ class MapLibreMapController(
         val markerOptions = MarkerOptions().apply {
             position = LatLng(marker.lat, marker.lon)
             title = marker.title
-            snippet = marker.description
         }
         maplibreMap.selectMarker(Marker(markerOptions))
     }

@@ -71,6 +71,7 @@ fun TaskMapViewScreen(
     taskViewModel: TaskViewModel = viewModel(key = "taskMap"),
     projectLayerViewModel: ProjectLayerViewModel = viewModel(),
     onBack: () -> Unit,
+    gotoForm: (String) -> Unit,
 ) {
 
     // 获取任务列表
@@ -104,8 +105,8 @@ fun TaskMapViewScreen(
         onBack()
     }
 
-    // 图层查询结果处理
-    LaunchedEffect(projectLayers, taskList) {
+    // 图层和任务查询结果处理
+    LaunchedEffect(loadingIndex) {
         if (loadingIndex == 2) {
             if (projectLayers.isNotEmpty()) {
                 projectLayers.forEach {
@@ -225,19 +226,19 @@ fun TaskMapViewScreen(
             )
 
             scope.launch {
-                val deferred1 = async {
+                val taskDeferred = async {
                     // 查询所有任务
                     taskViewModel.search(dataTableName, "") {
                         loadingIndex++
                     }
                 }
-                val deferred2 = async {
+                val projectLayerDeferred = async {
                     projectLayerViewModel.getByProjectId(projectId) {
                         loadingIndex++
                     }
                 }
-                // 等待两个协程都完成
-                awaitAll(deferred1, deferred2)
+                // 同时执行两个协程
+                awaitAll(taskDeferred, projectLayerDeferred)
 
             }
         }
@@ -290,7 +291,12 @@ fun TaskMapViewScreen(
                 }
             ) {
                 // 打开表单页
-
+                currentMarker?.let {
+                    taskViewModel.reset()
+                    projectLayerViewModel.reset()
+                    // 传入任务编号
+                    gotoForm(it.title)
+                }
 
             }
         }
