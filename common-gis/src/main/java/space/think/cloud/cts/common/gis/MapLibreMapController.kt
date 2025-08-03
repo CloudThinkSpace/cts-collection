@@ -3,8 +3,6 @@ package space.think.cloud.cts.common.gis
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import org.maplibre.android.annotations.IconFactory
 import org.maplibre.android.annotations.Marker
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.geometry.LatLng
@@ -75,18 +73,6 @@ class MapLibreMapController(
         }
     }
 
-    fun <T> addMarker(marker: CtsMarker): T {
-        val bitmap = drawableToBitmap(context, marker.icon)
-        val markerIcon = IconFactory.getInstance(context).fromBitmap(bitmap)
-        val markerOptions = MarkerOptions().apply {
-            position = LatLng(marker.lat, marker.lon)
-            title = marker.title
-            snippet = marker.description
-            icon = markerIcon
-        }
-        return maplibreMap.addMarker(markerOptions) as T
-    }
-
     fun addLayer(name: String, uri: String) {
         mapLibreManager.addRasterLayer(name, uri)
     }
@@ -101,8 +87,8 @@ class MapLibreMapController(
         }
     }
 
-    fun addImage(name: String, imageRes: Int) {
-        mapLibreManager.addImage(name, imageRes)
+    fun addImage(name: String, bitmap: Bitmap) {
+        mapLibreManager.addImage(name, bitmap)
     }
 
     fun onInfoWindowClickListener(onClick: (Marker) -> Unit) {
@@ -112,10 +98,6 @@ class MapLibreMapController(
                 return true
             }
         }
-    }
-
-    fun drawableToBitmap(context: Context, drawableResId: Int): Bitmap {
-        return BitmapFactory.decodeResource(context.resources, drawableResId)
     }
 
     fun toggleLayer(layerId: String, visible: Boolean) {
@@ -143,13 +125,10 @@ class MapLibreMapController(
 
     // 显示InfoWindow
     fun showInfoWindow(marker: CtsMarker) {
-        val bitmap = drawableToBitmap(context, marker.icon)
-        val markerIcon = IconFactory.getInstance(context).fromBitmap(bitmap)
         val markerOptions = MarkerOptions().apply {
             position = LatLng(marker.lat, marker.lon)
             title = marker.title
             snippet = marker.description
-            icon = markerIcon
         }
         maplibreMap.selectMarker(Marker(markerOptions))
     }

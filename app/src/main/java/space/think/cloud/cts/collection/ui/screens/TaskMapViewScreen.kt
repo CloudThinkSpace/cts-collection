@@ -56,6 +56,7 @@ import space.think.cloud.cts.collection.viewmodel.ProjectLayerViewModel
 import space.think.cloud.cts.collection.viewmodel.TaskViewModel
 import space.think.cloud.cts.common.gis.MapLibreMapController
 import space.think.cloud.cts.common.gis.MapLibreMapView
+import space.think.cloud.cts.common.gis.utils.DrawableUtils
 import space.think.cloud.cts.common.gis.utils.MapNavigationUtil
 import space.think.cloud.cts.common.gis.utils.TransformUtils
 import space.think.cloud.cts.lib.ui.CheckBoxItem
@@ -212,8 +213,8 @@ fun TaskMapViewScreen(
         ) {
             mapLibreMapController = it
             // 添加图标
-            mapLibreMapController?.addImage("marker-blue", R.drawable.location_blue)
-            mapLibreMapController?.addImage("marker-red", R.drawable.location_red)
+            mapLibreMapController?.addImage("marker-blue", DrawableUtils.drawableToBitmap(context, R.drawable.location_blue))
+            mapLibreMapController?.addImage("marker-red", DrawableUtils.drawableToBitmap(context, R.drawable.location_red))
 
             scope.launch {
                 val deferred1 = async {
