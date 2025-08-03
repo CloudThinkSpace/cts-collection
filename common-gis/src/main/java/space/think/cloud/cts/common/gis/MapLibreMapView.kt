@@ -5,14 +5,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import org.maplibre.android.annotations.Marker
 import space.think.cloud.cts.common.gis.runtime.awaitMap
 import space.think.cloud.cts.common.gis.runtime.rememberMapViewWithLifecycle
 
 @Composable
 fun MapLibreMapView(
     modifier: Modifier = Modifier,
-    onInfoWindowClick: (Marker) -> Unit,
+    onInfoWindowClick: (CtsMarker) -> Unit,
     onMapReady: (MapLibreMapController) -> Unit
 ) {
     val context = LocalContext.current

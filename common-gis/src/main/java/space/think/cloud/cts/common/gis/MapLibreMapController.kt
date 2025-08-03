@@ -91,10 +91,12 @@ class MapLibreMapController(
         mapLibreManager.addImage(name, bitmap)
     }
 
-    fun onInfoWindowClickListener(onClick: (Marker) -> Unit) {
+    fun onInfoWindowClickListener(onClick: (CtsMarker) -> Unit) {
         maplibreMap.onInfoWindowClickListener = object : MapLibreMap.OnInfoWindowClickListener {
             override fun onInfoWindowClick(marker: Marker): Boolean {
-                onClick(marker)
+                selectMarker?.let {
+                    onClick(it)
+                }
                 return true
             }
         }
@@ -125,6 +127,7 @@ class MapLibreMapController(
 
     // 显示InfoWindow
     fun showInfoWindow(marker: CtsMarker) {
+        selectMarker = marker
         val markerOptions = MarkerOptions().apply {
             position = LatLng(marker.lat, marker.lon)
             title = marker.title

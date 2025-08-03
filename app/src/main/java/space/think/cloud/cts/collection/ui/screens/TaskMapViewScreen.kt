@@ -45,8 +45,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
-import org.maplibre.android.annotations.Marker
-import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.style.expressions.Expression
 import org.maplibre.geojson.Feature
@@ -54,6 +52,7 @@ import space.think.cloud.cts.collection.R
 import space.think.cloud.cts.collection.taskItemToFeature
 import space.think.cloud.cts.collection.viewmodel.ProjectLayerViewModel
 import space.think.cloud.cts.collection.viewmodel.TaskViewModel
+import space.think.cloud.cts.common.gis.CtsMarker
 import space.think.cloud.cts.common.gis.MapLibreMapController
 import space.think.cloud.cts.common.gis.MapLibreMapView
 import space.think.cloud.cts.common.gis.utils.DrawableUtils
@@ -91,7 +90,7 @@ fun TaskMapViewScreen(
 
     val context = LocalContext.current
 
-    var currentMarker: Marker? by remember {
+    var currentMarker: CtsMarker? by remember {
         mutableStateOf(null)
     }
 
@@ -124,10 +123,13 @@ fun TaskMapViewScreen(
                     // 收集坐标
                     bounds.add(LatLng(lat, lon))
                     if (it.code == taskItem?.code) {
-                        currentMarker = Marker(MarkerOptions().apply {
-                            this.position = LatLng(lat, lon)
-                            title = it.code
-                        })
+                        currentMarker = CtsMarker(
+                            lon = lon,
+                            lat = lat,
+                            title = it.code,
+                            description = it.name,
+                            icon = R.drawable.location_red
+                        )
                     }
                     val feature = taskItemToFeature(it)
                     features.add(feature)
@@ -151,8 +153,8 @@ fun TaskMapViewScreen(
                         // 移动到点位
                         mapLibreMapController?.animateToLatLng(
                             LatLng(
-                                marker.position.latitude,
-                                marker.position.longitude
+                                marker.lat,
+                                marker.lon
                             ),
                             zoom = 14.0
                         ) {
@@ -213,8 +215,14 @@ fun TaskMapViewScreen(
         ) {
             mapLibreMapController = it
             // 添加图标
-            mapLibreMapController?.addImage("marker-blue", DrawableUtils.drawableToBitmap(context, R.drawable.location_blue))
-            mapLibreMapController?.addImage("marker-red", DrawableUtils.drawableToBitmap(context, R.drawable.location_red))
+            mapLibreMapController?.addImage(
+                "marker-blue",
+                DrawableUtils.drawableToBitmap(context, R.drawable.location_blue)
+            )
+            mapLibreMapController?.addImage(
+                "marker-red",
+                DrawableUtils.drawableToBitmap(context, R.drawable.location_red)
+            )
 
             scope.launch {
                 val deferred1 = async {
@@ -251,8 +259,8 @@ fun TaskMapViewScreen(
 
                         // 坐标转换，转成高德坐标
                         val latLng = TransformUtils.wgs84ToGcj02(
-                            this.position.longitude,
-                            this.position.latitude
+                            this.lon,
+                            this.lat
                         )
                         // 打开高德导航软件
                         MapNavigationUtil.gaodeIntent(
@@ -268,8 +276,8 @@ fun TaskMapViewScreen(
                     currentMarker?.apply {
                         // 坐标转换，转成百度坐标
                         val latLng = TransformUtils.wgs84ToBd09(
-                            this.position.longitude,
-                            this.position.latitude
+                            this.lon,
+                            this.lat
                         )
                         // 打开百度导航软件
                         MapNavigationUtil.baiduIntent(
