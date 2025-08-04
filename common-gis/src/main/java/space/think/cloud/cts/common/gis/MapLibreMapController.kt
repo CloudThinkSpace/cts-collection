@@ -3,6 +3,7 @@ package space.think.cloud.cts.common.gis
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import kotlinx.coroutines.flow.first
 import org.maplibre.android.annotations.Marker
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.geometry.LatLng
@@ -12,6 +13,8 @@ import org.maplibre.android.style.expressions.Expression
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.Point
 import space.think.cloud.cts.common.gis.layer.addTdtLayers
+import space.think.cloud.cts.common_datastore.DataStoreUtil
+import space.think.cloud.cts.common_datastore.PreferencesKeys
 
 @SuppressLint("MissingPermission")
 class MapLibreMapController(
@@ -28,6 +31,8 @@ class MapLibreMapController(
     // 地图管理器
     private val mapLibreManager = MapLibreManager(context, maplibreMap)
 
+    private val dataStoreUtil = DataStoreUtil(context)
+
     // 全图范围
     private var latLngBounds: LatLngBounds? = null
 
@@ -42,6 +47,24 @@ class MapLibreMapController(
         mapLibreManager.addMapClickListener { features ->
             handleMapClick(features)
         }
+    }
+
+    /**
+     * 全图
+     */
+    fun goFullBounds() {
+        latLngBounds?.let {
+            mapLibreManager.animateToBounds(it)
+        }
+    }
+
+    /**
+     * 当前位置
+     */
+    suspend fun goLocation() {
+        val lat = dataStoreUtil.getData(PreferencesKeys.LAT_KEY, 0.0).first()
+        val lon = dataStoreUtil.getData(PreferencesKeys.LON_KEY, 0.0).first()
+        mapLibreManager.animateToLatLng(LatLng(lat, lon))
     }
 
     private fun handleMapClick(features: List<Feature>) {
@@ -82,9 +105,15 @@ class MapLibreMapController(
         expression: Expression,
         features: List<Feature>
     ) {
-        mapLibreManager.addSymbolLayer(name, expression, features) {
-            latLngBounds = it
-        }
+
+        mapLibreManager.addSymbolLayer(
+            name = name,
+            expression = expression,
+            features = features,
+            onBounds = {
+                latLngBounds = it
+            }
+        )
     }
 
     fun addImage(name: String, bitmap: Bitmap) {

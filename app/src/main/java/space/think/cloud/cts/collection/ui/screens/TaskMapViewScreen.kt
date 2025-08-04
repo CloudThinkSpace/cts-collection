@@ -5,6 +5,8 @@ package space.think.cloud.cts.collection.ui.screens
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +17,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ControlCamera
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -247,10 +252,37 @@ fun TaskMapViewScreen(
             )
         }
     ) { paddingValues ->
-        MapLibreMapView(
+        Box(
             modifier = Modifier.padding(paddingValues),
-            mapView = mapView
-        )
+            contentAlignment = Alignment.TopEnd
+        ) {
+            // 地图组件
+            MapLibreMapView(
+                mapView = mapView
+            )
+            // 其他组件
+            Column (
+                modifier = Modifier.fillMaxHeight().padding(10.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+
+            ){
+
+                IconButton(onClick = {
+                    mapLibreMapController?.goFullBounds()
+
+                }) {
+                    Icon(Icons.Filled.Home, tint = Color.White, contentDescription = null)
+                }
+                IconButton(onClick = {
+                    scope.launch {
+                        mapLibreMapController?.goLocation()
+                    }
+                }) {
+                    Icon(Icons.Filled.ControlCamera, tint = Color.White, contentDescription = null)
+                }
+            }
+        }
+
     }
 
     if (operationBottomSheet) {

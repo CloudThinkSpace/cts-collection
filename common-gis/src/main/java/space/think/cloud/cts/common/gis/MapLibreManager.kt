@@ -155,14 +155,14 @@ class MapLibreManager(
 
     /**
      * 平移到指定坐标，带动画效果
-     * @param bounds 缩放范围
+     * @param bounds 缩放范围坐标列表
      * @param delay 动画运行时间
      * @param onFinish 执行完成后执行的函数
      */
     fun animateToBounds(
         bounds: List<LatLng>,
         delay: Int = 2000,
-        onFinish: ((LatLngBounds) -> Unit)? = null
+        onFinish: (() -> Unit)? = null
     ) {
         val latLngBounds = LatLngBounds.fromLatLngs(bounds)
         maplibreMap.getCameraForLatLngBounds(latLngBounds)?.let {
@@ -177,7 +177,37 @@ class MapLibreManager(
                     }
 
                     override fun onFinish() {
-                        onFinish?.invoke(latLngBounds)
+                        onFinish?.invoke()
+                    }
+                }
+            )
+        }
+    }
+
+    /**
+     * 平移到指定坐标，带动画效果
+     * @param latLngBounds 缩放范围
+     * @param delay 动画运行时间
+     * @param onFinish 执行完成后执行的函数
+     */
+    fun animateToBounds(
+        latLngBounds: LatLngBounds,
+        delay: Int = 2000,
+        onFinish: (() -> Unit)? = null
+    ) {
+        maplibreMap.getCameraForLatLngBounds(latLngBounds)?.let {
+            val newCameraPosition = CameraPosition.Builder()
+                .target(it.target)
+                .zoom(it.zoom - 0.5)
+                .build()
+            maplibreMap.animateCamera(
+                CameraUpdateFactory.newCameraPosition(newCameraPosition), delay,
+                object : CancelableCallback {
+                    override fun onCancel() {
+                    }
+
+                    override fun onFinish() {
+                        onFinish?.invoke()
                     }
                 }
             )
@@ -274,8 +304,9 @@ class MapLibreManager(
         name: String,
         expression: Expression,
         features: List<Feature>,
-        isZoom: Boolean = true,
-        onFinish: ((LatLngBounds) -> Unit)? = null
+        isZoom: Boolean = false,
+        onBounds:((LatLngBounds)-> Unit)? = null,
+        onFinish: (() -> Unit)? = null
     ) {
         // 如果图层和数据源存在删除
         removeSymbolLayer(name)
@@ -293,24 +324,26 @@ class MapLibreManager(
             )
         // 添加图层
         addLayer(layer)
-
-        // 判断是否需要缩放移动
-        if (isZoom) {
-            val data = features.map {
-                val geometry = it.geometry()
-                when (geometry) {
-                    is Point -> {
-                        LatLng(geometry.latitude(), geometry.longitude())
-                    }
-
-                    else -> {
-                        throw IllegalArgumentException("The geometry of feature is not an Point type")
-                    }
+        // 获取要素的所有坐标
+        val data = features.map {
+            val geometry = it.geometry()
+            when (geometry) {
+                is Point -> {
+                    LatLng(geometry.latitude(), geometry.longitude())
                 }
 
+                else -> {
+                    throw IllegalArgumentException("The geometry of feature is not an Point type")
+                }
             }
+        }
+        // 图层范围
+        val latLngBounds = LatLngBounds.fromLatLngs(data)
+        onBounds?.invoke(latLngBounds)
+        // 判断是否需要缩放移动
+        if (isZoom) {
             // 移动到指定访问内
-            animateToBounds(bounds = data, onFinish = onFinish)
+            animateToBounds(latLngBounds, onFinish = onFinish)
         }
     }
 
