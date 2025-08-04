@@ -8,12 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ProjectData(
     val id: String,
     val title: String,
     val subTitle: String,
     val dataTableName: String,
+    val formTemplateId: String,
     val type: Int,
     val status: Int,
 )

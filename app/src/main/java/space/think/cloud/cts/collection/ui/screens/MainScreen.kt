@@ -54,36 +54,39 @@ fun MainScreen(
             }
             entry<TaskMapView> {
                 TaskMapViewScreen(
-                    projectId = it.projectId,
-                    dataTableName = it.dataTableName,
+                    project = it.project,
                     taskItem = it.taskItem,
                     onBack = {
                         backStack.removeAt(backStack.lastIndex)
                     }
-                ) {
+                ) { taskCode ->
                     // 导航到表单页面，传入任务编号
-                    backStack.add(Form(it))
+                    backStack.add(Form(
+                        code = taskCode,
+                        formTemplateId = it.project.formTemplateId
+                    ))
                 }
             }
             entry<TaskList> {
                 TaskScreen(
-                    dataTableName = it.dataTableName,
+                    project = it.project,
                     onBack = {
                         backStack.removeAt(backStack.lastIndex)
                     }
-                ) { dataTableName, taskItem ->
+                ) {  taskItem ->
 
                     backStack.add(
                         TaskMapView(
-                            projectId = it.projectId,
-                            dataTableName = dataTableName,
+                            project =it.project,
                             taskItem
                         )
                     )
                 }
             }
             entry<Form> {
-                FormScreen(modifier = modifier, title = "数据采集", code = it.code)
+                FormScreen(modifier = modifier, title = "数据采集", code = it.code){
+                    backStack.removeAt(backStack.lastIndex)
+                }
             }
         }
 

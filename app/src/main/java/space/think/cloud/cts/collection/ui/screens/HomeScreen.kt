@@ -81,8 +81,7 @@ fun HomeScreen(
                             // 切换到任务列表中
                             backStack.add(
                                 TaskList(
-                                    projectId = it.id,
-                                    dataTableName = it.dataTableName
+                                    project = it
                                 )
                             )
                         }

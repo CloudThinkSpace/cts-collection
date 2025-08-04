@@ -1,6 +1,7 @@
 package space.think.cloud.cts.lib.form
 
 import android.content.Intent
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,12 +52,18 @@ fun FormScreen(
     modifier: Modifier = Modifier,
     title: String,
     code: String,
-    viewModel: FormViewModel = viewModel()
+    viewModel: FormViewModel = viewModel(),
+    onBack: () -> Unit
 ) {
 
     val fields by remember { derivedStateOf { viewModel.fields } }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val context = LocalContext.current
+
+    // 监听返回键
+    BackHandler(enabled = true) {
+        onBack()
+    }
 
     Scaffold(
         modifier = modifier,
@@ -74,7 +81,9 @@ fun FormScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = {
+                        onBack()
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Localized description"

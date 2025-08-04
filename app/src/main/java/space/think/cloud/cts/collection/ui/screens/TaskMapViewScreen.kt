@@ -46,6 +46,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.maps.MapView
 import org.maplibre.android.style.expressions.Expression
 import org.maplibre.geojson.Feature
 import space.think.cloud.cts.collection.R
@@ -55,18 +56,21 @@ import space.think.cloud.cts.collection.viewmodel.TaskViewModel
 import space.think.cloud.cts.common.gis.CtsMarker
 import space.think.cloud.cts.common.gis.MapLibreMapController
 import space.think.cloud.cts.common.gis.MapLibreMapView
+import space.think.cloud.cts.common.gis.runtime.awaitMap
+import space.think.cloud.cts.common.gis.runtime.rememberMapViewWithLifecycle
 import space.think.cloud.cts.common.gis.utils.DrawableUtils
 import space.think.cloud.cts.common.gis.utils.MapNavigationUtil
 import space.think.cloud.cts.common.gis.utils.TransformUtils
 import space.think.cloud.cts.lib.ui.CheckBoxItem
 import space.think.cloud.cts.lib.ui.form.MapBottomSheet
+import space.think.cloud.cts.lib.ui.project.ProjectData
 import space.think.cloud.cts.lib.ui.task.TaskItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskMapViewScreen(
-    projectId: String,
-    dataTableName: String,
+    mapView: MapView = rememberMapViewWithLifecycle(),
+    project: ProjectData,
     taskItem: TaskItem?,
     taskViewModel: TaskViewModel = viewModel(key = "taskMap"),
     projectLayerViewModel: ProjectLayerViewModel = viewModel(),
@@ -98,6 +102,42 @@ fun TaskMapViewScreen(
     var loadingIndex by remember { mutableIntStateOf(0) }
 
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(mapView) {
+        val maplibreMap = mapView.awaitMap()
+        mapLibreMapController = MapLibreMapController(context, maplibreMap)
+        // 添加infoWindow 点击事件
+        mapLibreMapController?.onInfoWindowClickListener {
+            currentMarker = it
+            operationBottomSheet = true
+        }
+        // 添加图标
+        mapLibreMapController?.addImage(
+            "marker-blue",
+            DrawableUtils.drawableToBitmap(context, R.drawable.location_blue)
+        )
+        mapLibreMapController?.addImage(
+            "marker-red",
+            DrawableUtils.drawableToBitmap(context, R.drawable.location_red)
+        )
+
+        scope.launch {
+            val taskDeferred = async {
+                // 查询所有任务
+                taskViewModel.search(project.dataTableName, "") {
+                    loadingIndex++
+                }
+            }
+            val projectLayerDeferred = async {
+                projectLayerViewModel.getByProjectId(project.id) {
+                    loadingIndex++
+                }
+            }
+            // 同时执行两个协程
+            awaitAll(taskDeferred, projectLayerDeferred)
+
+        }
+    }
 
     // 监听返回键
     BackHandler(enabled = true) {
@@ -209,39 +249,8 @@ fun TaskMapViewScreen(
     ) { paddingValues ->
         MapLibreMapView(
             modifier = Modifier.padding(paddingValues),
-            onInfoWindowClick = {
-                currentMarker = it
-                operationBottomSheet = true
-            }
-        ) {
-            mapLibreMapController = it
-            // 添加图标
-            mapLibreMapController?.addImage(
-                "marker-blue",
-                DrawableUtils.drawableToBitmap(context, R.drawable.location_blue)
-            )
-            mapLibreMapController?.addImage(
-                "marker-red",
-                DrawableUtils.drawableToBitmap(context, R.drawable.location_red)
-            )
-
-            scope.launch {
-                val taskDeferred = async {
-                    // 查询所有任务
-                    taskViewModel.search(dataTableName, "") {
-                        loadingIndex++
-                    }
-                }
-                val projectLayerDeferred = async {
-                    projectLayerViewModel.getByProjectId(projectId) {
-                        loadingIndex++
-                    }
-                }
-                // 同时执行两个协程
-                awaitAll(taskDeferred, projectLayerDeferred)
-
-            }
-        }
+            mapView = mapView
+        )
     }
 
     if (operationBottomSheet) {

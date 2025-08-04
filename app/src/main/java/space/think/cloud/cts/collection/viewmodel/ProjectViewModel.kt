@@ -26,6 +26,7 @@ class ProjectViewModel : BaseViewModel() {
                 ProjectData(
                     id = it.id,
                     dataTableName = it.dataTableName,
+                    formTemplateId = it.formTemplateName,
                     title = it.name,
                     subTitle = it.code,
                     type = it.type,

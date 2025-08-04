@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.sp
  */
 @Composable
 fun CameraBottomSheet(
-    containerColor: Color = Color(0xFF5ac18e),
+    containerColor: Color = MaterialTheme.colorScheme.primary,
     onCamera: () -> Unit,
     onSelect: () -> Unit
 ) {

@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import space.think.cloud.cts.collection.viewmodel.TaskViewModel
 import space.think.cloud.cts.lib.ui.SearchAppBar
+import space.think.cloud.cts.lib.ui.project.ProjectData
 import space.think.cloud.cts.lib.ui.task.TaskContent
 import space.think.cloud.cts.lib.ui.task.TaskItem
 
@@ -41,11 +42,11 @@ import space.think.cloud.cts.lib.ui.task.TaskItem
 @Composable
 fun TaskScreen(
     modifier: Modifier = Modifier,
-    dataTableName: String,
+    project: ProjectData,
     taskViewModel: TaskViewModel = viewModel(key = "taskList"),
     onBack: () -> Unit,
     onClickDetail: ((TaskItem) -> Unit)? = null,
-    onClick: (String, TaskItem?) -> Unit
+    onClick: (TaskItem?) -> Unit
 ) {
 
     // 获取任务列表
@@ -57,7 +58,7 @@ fun TaskScreen(
 
     LaunchedEffect(searchValue) {
         isLoading = true
-        taskViewModel.search(dataTableName, searchValue) {
+        taskViewModel.search(project.dataTableName, searchValue) {
             isLoading = false
         }
     }
@@ -104,7 +105,7 @@ fun TaskScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        onClick(dataTableName, null)
+                        onClick(null)
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Map,
@@ -130,7 +131,7 @@ fun TaskScreen(
                 TaskContent(
                     taskList = taskList,
                     onClick = {
-                        onClick(dataTableName, it)
+                        onClick(it)
                     },
                     onClickDetail = onClickDetail,
                 )
