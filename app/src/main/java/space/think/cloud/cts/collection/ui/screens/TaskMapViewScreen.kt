@@ -111,15 +111,15 @@ fun TaskMapViewScreen(
             currentMarker = it
             operationBottomSheet = true
         }
+        // 图标列表
+        val imageMap = mapOf(
+            "marker-blue" to DrawableUtils.drawableToBitmap(context, R.drawable.location_blue),
+            "marker-red" to DrawableUtils.drawableToBitmap(context, R.drawable.location_red)
+        )
         // 添加图标
-        mapLibreMapController?.addImage(
-            "marker-blue",
-            DrawableUtils.drawableToBitmap(context, R.drawable.location_blue)
-        )
-        mapLibreMapController?.addImage(
-            "marker-red",
-            DrawableUtils.drawableToBitmap(context, R.drawable.location_red)
-        )
+        imageMap.forEach {
+            mapLibreMapController?.addImage(it.key, it.value)
+        }
 
         scope.launch {
             val taskDeferred = async {
