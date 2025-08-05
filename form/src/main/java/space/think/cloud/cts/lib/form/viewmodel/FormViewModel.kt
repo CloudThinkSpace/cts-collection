@@ -1,183 +1,77 @@
 package space.think.cloud.cts.lib.form.viewmodel
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import space.think.cloud.cts.lib.form.FormField
-import space.think.cloud.cts.lib.ui.form.Item
+import space.think.cloud.cts.lib.network.RetrofitClient
+import space.think.cloud.cts.lib.network.model.request.RequestFormData
+import space.think.cloud.cts.lib.network.model.response.ResponseFormTemplate
+import space.think.cloud.cts.lib.network.model.response.Result
+import space.think.cloud.cts.lib.network.services.FormService
+import space.think.cloud.cts.lib.network.services.FormTemplateService
 
-class FormViewModel:ViewModel() {
+class FormViewModel : ViewModel() {
+
 
     private val _fields = mutableStateListOf<FormField>()
     val fields: List<FormField> = _fields
 
-    init {
-        _fields.add(FormField(
-            id = "1",
-            title = "文本组件",
-            value = "",
-            required = true,
-            type = "TextType"
-        ))
-        _fields.add(FormField(
-            id = "2",
-            title = "用户组件",
-            value = "",
-            required = true,
-            type = "UserType"
-        ))
-        _fields.add(FormField(
-            id = "3",
-            title = "整数组件",
-            value = "",
-            required = true,
-            type = "IntegerType"
-        ))
-        _fields.add(FormField(
-            id = "4",
-            title = "数值组件",
-            value = "",
-            required = true,
-            type = "NumberType"
-        ))
-        _fields.add(FormField(
-            id = "5",
-            title = "经度组件",
-            value = "",
-            required = true,
-            type = "LongitudeType"
-        ))
-        _fields.add(FormField(
-            id = "6",
-            title = "地址组件",
-            value = "",
-            type = "AddressType"
-        ))
-        _fields.add(FormField(
-            id = "7",
-            title = "纬度组件",
-            value = "",
-            type = "LatitudeType"
-        ))
-        _fields.add(FormField(
-            id = "8",
-            title = "密码组件",
-            value = "",
-            type = "PasswordType"
-        ))
-        _fields.add(FormField(
-            id = "9",
-            title = "单选组件",
-            value = "",
-            type = "SingleChoiceType",
-            items = listOf(
-                Item(
-                    name = "111",
-                    code = "1"
-                ),
-                Item(
-                    name = "111",
-                    code = "2"
-                ),
-                Item(
-                    name = "111",
-                    code = "3"
-                )
-            )
-        ))
-        _fields.add(FormField(
-            id = "10",
-            title = "多选组件",
-            value = "",
-            type = "MoreChoiceType",
-            items = listOf(
-                Item(
-                    name = "111",
-                    code = "1"
-                ),
-                Item(
-                    name = "111",
-                    code = "2"
-                ),
-                Item(
-                    name = "111",
-                    code = "3"
-                )
-            )
-        ))
-        _fields.add(FormField(
-            id = "11",
-            title = "列表多选组件",
-            value = "",
-            type = "CheckType",
-            items = listOf(
-                Item(
-                    name = "111",
-                    code = "1"
-                ),
-                Item(
-                    name = "111",
-                    code = "2"
-                ),
-                Item(
-                    name = "111",
-                    code = "3"
-                )
-            )
-        ))
-        _fields.add(FormField(
-            id = "12",
-            title = "列表单选组件",
-            value = "",
-            type = "RadioType",
-            items = listOf(
-                Item(
-                    name = "111",
-                    code = "1"
-                ),
-                Item(
-                    name = "111",
-                    code = "2"
-                ),
-                Item(
-                    name = "111",
-                    code = "3"
-                )
-            )
-        ))
-        _fields.add(FormField(
-            id = "13",
-            title = "分割组件",
-            value = "",
-            type = "SectionType"
-        ))
-        _fields.add(FormField(
-            id = "14",
-            title = "日期组件",
-            value = "",
-            type = "DateType"
-        ))
-        _fields.add(FormField(
-            id = "15",
-            title = "邮箱组件",
-            value = "",
-            type = "EmailType"
-        ))
-        _fields.add(FormField(
-            id = "16",
-            title = "拍照组件",
-            value = "",
-            type = "ImageType",
-            subTitles = listOf("123","234")
-        ))
-        _fields.add(FormField(
-            id = "17",
-            title = "视频组件",
-            value = "",
-            type = "VideoType",
-            required = true,
-            subTitles = listOf("123","234")
-        ))
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> get() = _error
+
+    // 是否提交数据
+    var isSubmit by mutableStateOf(false)
+
+    // 表单模板操作接口
+    private val formTemplateService = RetrofitClient.createService<FormTemplateService>()
+
+    // 表单操作接口
+    private val formService = RetrofitClient.createService<FormService>()
+
+
+    /**
+     * 查询表单数据
+     */
+    fun queryFormTemplateById(
+        formTemplateId: String,
+        onSuccess: (ResponseFormTemplate) -> Unit,
+    ) = launch(
+        {
+            formTemplateService.getByTemplateId(formTemplateId)
+        },
+        {
+            _error.value = it
+        }
+    ) {
+        it?.let { formTemplate ->
+            onSuccess(formTemplate)
+        }
     }
+
+    /**
+     * <h2>创建表单数据</h2>
+     */
+    fun createFromData(formData: RequestFormData) =
+        launch({ formService.createFromData(formData) }) {
+            isSubmit = true
+        }
+
+    /**
+     * <h2>更新表单数据</h2>
+     */
+    fun updateFormData(formData: RequestFormData) =
+        launch({ formService.updateFormData(formData) }) {
+            isSubmit = true
+        }
 
     /**
      * 更新字段信息
@@ -189,6 +83,40 @@ class FormViewModel:ViewModel() {
             // 更新字段
             _fields[index] = updatedField  // 只更新特定项
         }
+    }
+
+    fun  updateFields(fields: List<FormField>){
+        _fields.clear()
+        _fields.addAll(fields)
+    }
+
+    private fun <T> launch(
+        block: suspend () -> space.think.cloud.cts.lib.network.model.response.Result<T>,
+        errorFun: ((String) -> Unit)? = null,
+        onCallBack: (() -> Unit)? = null,
+        successFun: (T?) -> Unit
+    ) =
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    block()
+                } catch (e: Exception) {
+                    Result(500, e.toString(), null)
+                }
+            }
+            onCallBack?.invoke()
+            if (result.code != 200) {
+                result.msg.apply {
+                    errorFun?.invoke(this)
+                    _error.value = this
+                }
+            } else {
+                successFun(result.data)
+            }
+        }
+
+    fun reset() {
+        _error.value = null
     }
 
 }

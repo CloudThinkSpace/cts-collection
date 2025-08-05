@@ -1,6 +1,5 @@
 package space.think.cloud.cts.lib.form
 
-import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,41 +23,55 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.flow.first
+import space.think.cloud.cts.common_datastore.DataStoreUtil
+import space.think.cloud.cts.common_datastore.PreferencesKeys
+import space.think.cloud.cts.lib.form.factory.WidgetFactory
 import space.think.cloud.cts.lib.form.viewmodel.FormViewModel
-import space.think.cloud.cts.lib.ui.form.widgets.CheckWidget
-import space.think.cloud.cts.lib.ui.form.widgets.DateWidget
-import space.think.cloud.cts.lib.ui.form.widgets.EmailWidget
-import space.think.cloud.cts.lib.ui.form.widgets.ImageWidget
-import space.think.cloud.cts.lib.ui.form.widgets.IntegerWidget
-import space.think.cloud.cts.lib.ui.form.widgets.MoreChoiceWidget
-import space.think.cloud.cts.lib.ui.form.widgets.NumberWidget
-import space.think.cloud.cts.lib.ui.form.widgets.PasswordWidget
-import space.think.cloud.cts.lib.ui.form.widgets.RadioWidget
-import space.think.cloud.cts.lib.ui.form.widgets.SectionWidget
-import space.think.cloud.cts.lib.ui.form.widgets.SingleChoiceWidget
-import space.think.cloud.cts.lib.ui.form.widgets.TextWidget
-import space.think.cloud.cts.lib.ui.form.widgets.VideoWidget
-import space.think.cloud.cts.lib.ui.utils.StringUtil
+import space.think.cloud.cts.lib.ui.project.ProjectData
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormScreen(
     modifier: Modifier = Modifier,
-    title: String,
+    project: ProjectData,
     code: String,
-    viewModel: FormViewModel = viewModel(),
+    formViewModel: FormViewModel = viewModel(),
     onBack: () -> Unit
 ) {
 
-    val fields by remember { derivedStateOf { viewModel.fields } }
+    var title by remember { mutableStateOf("") }
+    val fields by remember { derivedStateOf { formViewModel.fields } }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+
+        val dataStore = DataStoreUtil(context)
+        val lon = dataStore.getData(PreferencesKeys.LON_KEY, 0.0).first()
+        val lat = dataStore.getData(PreferencesKeys.LAT_KEY, 0.0).first()
+        val fieldBuilder = FieldBuilder()
+        fieldBuilder.withLon(lon)
+        fieldBuilder.withLat(lat)
+
+        // 查询表单模板
+        formViewModel.queryFormTemplateById(
+            formTemplateId = project.formTemplateId,
+        ) {
+            title = it.title
+            val fields = fieldBuilder.createFields(it.content)
+            formViewModel.updateFields(fields)
+        }
+    }
+
 
     // 监听返回键
     BackHandler(enabled = true) {
@@ -70,8 +83,8 @@ fun FormScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 title = {
                     Text(
@@ -86,6 +99,7 @@ fun FormScreen(
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            tint = Color.White,
                             contentDescription = "Localized description"
                         )
                     }
@@ -94,6 +108,7 @@ fun FormScreen(
                     IconButton(onClick = { /* do something */ }) {
                         Icon(
                             imageVector = Icons.Filled.SaveAs,
+                            tint = Color.White,
                             contentDescription = "Localized description"
                         )
                     }
@@ -111,319 +126,9 @@ fun FormScreen(
                 items = fields,
                 key = { it.id }
             ) { field ->
-                // 使用独立的状态管理
-                var localField by remember(field.id) { mutableStateOf(field) }
 
-                LaunchedEffect(field) {
-                    localField = field // 当外部field变化时更新本地状态
-                }
-
-                when (localField.type) {
-                    QuestionType.TextType.type -> {
-                        TextWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description
-                        ) { newValue ->
-                            val updated = localField.copy(value = newValue)
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.UserType.type -> {
-                        TextWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description
-                        ) { newValue ->
-                            val updated = localField.copy(value = newValue)
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.IntegerType.type -> {
-                        IntegerWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description
-                        ) { newValue ->
-                            val updated = localField.copy(value = newValue)
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.NumberType.type -> {
-                        NumberWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description
-                        ) { newValue ->
-                            val updated = localField.copy(value = newValue)
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.LongitudeType.type -> {
-                        NumberWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description
-                        ) { newValue ->
-                            val updated = localField.copy(value = newValue)
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.LatitudeType.type -> {
-                        NumberWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description
-                        ) { newValue ->
-                            val updated = localField.copy(value = newValue)
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.AddressType.type -> {
-                        TextWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description
-                        ) { newValue ->
-                            val updated = localField.copy(value = newValue)
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.EmailType.type -> {
-                        EmailWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description
-                        ) { newValue ->
-                            val updated = localField.copy(value = newValue)
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.PasswordType.type -> {
-                        PasswordWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description
-                        ) { newValue ->
-                            val updated = localField.copy(value = newValue)
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.SectionType.type -> {
-                        SectionWidget(title = field.title)
-                    }
-
-                    QuestionType.SingleChoiceType.type -> {
-                        SingleChoiceWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description,
-                            items = localField.items ?: listOf(),
-                        ) { newValue ->
-                            val updated = localField.copy(
-                                value = newValue.code,
-                                items = field.items
-                            )
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.MoreChoiceType.type -> {
-                        MoreChoiceWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description,
-                            items = localField.items ?: listOf(),
-                        ) { newValue ->
-
-                            val updated = localField.copy(
-                                value = newValue.joinToString(",") { checkItem ->
-                                    checkItem.code
-                                },
-                                items = field.items
-                            )
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.CheckType.type -> {
-                        CheckWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description,
-                            items = localField.items ?: listOf(),
-                        ) { newValue ->
-                            val updated = localField.copy(
-                                value = newValue.joinToString(",") { checkItem ->
-                                    checkItem.code
-                                },
-                                items = field.items
-                            )
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.RadioType.type -> {
-                        RadioWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description,
-                            items = localField.items ?: listOf(),
-                        ) { newValue ->
-                            val updated = localField.copy(
-                                value = newValue.code,
-                                items = field.items
-                            )
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.DateType.type -> {
-                        DateWidget(
-                            value = localField.getFieldValue(),
-                            title = localField.title,
-                            unit = localField.unit,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            description = localField.description,
-                        ) { newValue ->
-                            val updated = localField.copy(value = newValue)
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.ImageType.type -> {
-                        ImageWidget(
-                            value = localField.getMediasToMap(),
-                            title = localField.title,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            subTitles = localField.subTitles ?: listOf(),
-                            description = localField.description,
-                            onPreview = {
-                                val intent =
-                                    Intent(context, ImagePreviewActivity::class.java).apply {
-                                        putStringArrayListExtra(
-                                            "uris",
-                                            ArrayList(listOf<String>(it.toString()))
-                                        )
-                                    }
-                                context.startActivity(intent)
-                            }
-                        ) { newValue ->
-                            val updated = localField.copy(value = StringUtil.mapToString(newValue))
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
-                    QuestionType.VideoType.type -> {
-                        VideoWidget(
-                            value = localField.getMediasToMap(),
-                            title = localField.title,
-                            errorMsg = localField.error,
-                            required = localField.required,
-                            isError = localField.error?.isNotEmpty() == true,
-                            enabled = localField.enabled,
-                            subTitles = localField.subTitles ?: listOf(),
-                            description = localField.description,
-                        ) { newValue ->
-                            val updated = localField.copy(value = StringUtil.mapToString(newValue))
-                            localField = updated
-                            viewModel.updateField(updated)
-                        }
-                    }
-
+                WidgetFactory.CreateWidget(field) { updated ->
+                    formViewModel.updateField(updated)
                 }
             }
         }

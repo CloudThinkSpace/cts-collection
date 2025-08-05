@@ -63,7 +63,7 @@ fun MainScreen(
                     // 导航到表单页面，传入任务编号
                     backStack.add(Form(
                         code = taskCode,
-                        formTemplateId = it.project.formTemplateId
+                        project = it.project
                     ))
                 }
             }
@@ -84,7 +84,11 @@ fun MainScreen(
                 }
             }
             entry<Form> {
-                FormScreen(modifier = modifier, title = "数据采集", code = it.code){
+                FormScreen(
+                    modifier = modifier,
+                    project = it.project,
+                    code = it.code
+                ){
                     backStack.removeAt(backStack.lastIndex)
                 }
             }

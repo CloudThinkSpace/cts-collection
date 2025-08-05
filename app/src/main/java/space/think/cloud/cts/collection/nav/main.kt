@@ -18,7 +18,8 @@ data object Help : NavKey
 @Serializable
 data class Form(
     val code: String,
-    val formTemplateId: String,
+    @Contextual
+    val project: ProjectData
 ) : NavKey
 
 @Serializable
