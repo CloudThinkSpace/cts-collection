@@ -32,6 +32,7 @@ fun MainScreen(
 ) {
     val topLevelBackStack = remember { TopLevelBackStack<Any>(Project) }
     val backStack = rememberNavBackStack(Home)
+    var selectTaskId by remember { mutableStateOf("") }
 
     NavDisplay(
         backStack = backStack,
@@ -57,10 +58,13 @@ fun MainScreen(
                 HelpScreen(modifier = modifier)
             }
             entry<TaskMapView> {
-                var taskId by remember { mutableStateOf(it.taskItem?.id) }
+
                 TaskMapViewScreen(
                     project = it.project,
-                    selectTaskId = taskId,
+                    selectTaskId = selectTaskId,
+                    onSelectTask = {
+                        selectTaskId = it
+                    },
                     onBack = {
                         backStack.removeAt(backStack.lastIndex)
                     }
@@ -81,6 +85,8 @@ fun MainScreen(
                         backStack.removeAt(backStack.lastIndex)
                     }
                 ) { taskItem ->
+
+                    selectTaskId = taskItem?.id ?: ""
 
                     backStack.add(
                         TaskMapView(

@@ -89,7 +89,14 @@ class MapLibreMapController(
                 description = "",
                 icon = R.drawable.location_blue
             ).apply {
-                showInfoWindow(this)
+                if (mapLibreManager.getCurrentZoom() >= 10.0) {
+                    showInfoWindow(this)
+                } else {
+                    mapLibreManager.animateToLatLng(latLng) {
+                        showInfoWindow(this)
+                    }
+                }
+
             }
 
         } else {

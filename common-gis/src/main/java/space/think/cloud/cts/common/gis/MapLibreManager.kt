@@ -76,6 +76,10 @@ class MapLibreManager(
         mapListener = listener
     }
 
+    fun getCurrentZoom(): Double {
+        return maplibreMap.cameraPosition.zoom
+    }
+
     /**
      * 初始化style，默认添加背景图层
      */
@@ -284,12 +288,20 @@ class MapLibreManager(
      * @param uri 在线图层的uri链接
      */
     fun addRasterLayer(name: String, uri: String) {
+
+        val rasterLayerId = "$name-raster-layer"
+        val rasterSourceId = "$name-raster-source"
+
         val rasterSource = RasterSourceBuilder()
-            .withId("$name-raster-source")
+            .withId(rasterSourceId)
             .withUri(Uri.decode(uri))
             .build()
+        // 移除图层和数据源
+        removeLayer(rasterLayerId)
+        removeSource(rasterSourceId)
+        // 添加数据
         style.addSource(rasterSource)
-        style.addLayer(RasterLayer("$name-raster-layer", "$name-raster-source"))
+        style.addLayer(RasterLayer(rasterLayerId, rasterSourceId))
     }
 
     /**
@@ -305,13 +317,16 @@ class MapLibreManager(
         expression: Expression,
         features: List<Feature>,
         isZoom: Boolean = false,
-        onBounds:((LatLngBounds)-> Unit)? = null,
+        onBounds: ((LatLngBounds) -> Unit)? = null,
         onFinish: (() -> Unit)? = null
     ) {
-        // 如果图层和数据源存在删除
-        removeSymbolLayer(name)
+        val layerName = "$name-symbol-layer"
+        // 删除图层
+        removeLayer(layerName)
         // 构造geoJson数据源
         val source = GeoJsonSource("$name-symbol-source", FeatureCollection.fromFeatures(features))
+        val sourceName = "$name-symbol-source"
+        removeSource(sourceName)
         // 添加数据源
         addSource(source)
         // 创建样式图层
@@ -348,27 +363,16 @@ class MapLibreManager(
     }
 
     /**
-     * 删除图标图层和数据源
-     * @param name 图标名称
-     */
-    fun removeSymbolLayer(name: String) {
-        val layer = style.getLayer("$name-symbol-layer")
-        val source = style.getSource("$name-symbol-source")
-        layer?.let {
-            removeLayer(layer)
-        }
-        source?.let {
-            removeSource(source)
-        }
-    }
-
-    /**
      * 删除图层
      * @param layerId 图层编号
      */
     fun removeLayer(layerId: String) {
-        style.removeLayer(layerId)
+        val layer = style.getLayer(layerId)
+        layer?.let {
+            style.removeLayer(layerId)
+        }
     }
+
     /**
      * 删除图层
      * @param layer 图层
@@ -382,7 +386,10 @@ class MapLibreManager(
      * @param sourceId 数据源编号
      */
     fun removeSource(sourceId: String) {
-        style.removeSource(sourceId)
+        val source = style.getSource(sourceId)
+        source?.let {
+            style.removeSource(sourceId)
+        }
     }
 
     /**

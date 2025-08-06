@@ -74,9 +74,10 @@ import space.think.cloud.cts.lib.ui.project.ProjectData
 fun TaskMapViewScreen(
     mapView: MapView = rememberMapViewWithLifecycle(),
     project: ProjectData,
-    selectTaskId: String?,
+    selectTaskId: String,
     taskViewModel: TaskViewModel = viewModel(key = "taskMap"),
     projectLayerViewModel: ProjectLayerViewModel = viewModel(),
+    onSelectTask: (String) -> Unit,
     onBack: () -> Unit,
     gotoForm: (String) -> Unit,
 ) {
@@ -112,6 +113,7 @@ fun TaskMapViewScreen(
         // 添加infoWindow 点击事件
         mapLibreMapController?.onInfoWindowClickListener {
             currentMarker = it
+            onSelectTask(it.taskId)
             operationBottomSheet = true
         }
         // 图标列表
@@ -189,7 +191,7 @@ fun TaskMapViewScreen(
                     ),
                     features = features,
                 )
-                if (selectTaskId == null) {
+                if (selectTaskId.isEmpty()) {
                     // 缩放到地图
                     mapLibreMapController?.animateToBounds(bounds)
                 } else {
@@ -260,11 +262,13 @@ fun TaskMapViewScreen(
                 mapView = mapView
             )
             // 其他组件
-            Column (
-                modifier = Modifier.fillMaxHeight().padding(10.dp),
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(10.dp),
                 verticalArrangement = Arrangement.SpaceBetween
 
-            ){
+            ) {
 
                 IconButton(onClick = {
                     mapLibreMapController?.goFullBounds()
