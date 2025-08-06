@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ControlCamera
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -69,14 +68,13 @@ import space.think.cloud.cts.common.gis.utils.TransformUtils
 import space.think.cloud.cts.lib.ui.CheckBoxItem
 import space.think.cloud.cts.lib.ui.form.MapBottomSheet
 import space.think.cloud.cts.lib.ui.project.ProjectData
-import space.think.cloud.cts.lib.ui.task.TaskItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskMapViewScreen(
     mapView: MapView = rememberMapViewWithLifecycle(),
     project: ProjectData,
-    taskItem: TaskItem?,
+    selectTaskId: String?,
     taskViewModel: TaskViewModel = viewModel(key = "taskMap"),
     projectLayerViewModel: ProjectLayerViewModel = viewModel(),
     onBack: () -> Unit,
@@ -168,8 +166,9 @@ fun TaskMapViewScreen(
                     val lon = it.lon.toDouble()
                     // 收集坐标
                     bounds.add(LatLng(lat, lon))
-                    if (it.code == taskItem?.code) {
+                    if (it.id == selectTaskId) {
                         currentMarker = CtsMarker(
+                            taskId = it.id,
                             lon = lon,
                             lat = lat,
                             title = it.code,
@@ -190,7 +189,7 @@ fun TaskMapViewScreen(
                     ),
                     features = features,
                 )
-                if (taskItem == null) {
+                if (selectTaskId == null) {
                     // 缩放到地图
                     mapLibreMapController?.animateToBounds(bounds)
                 } else {
@@ -336,7 +335,7 @@ fun TaskMapViewScreen(
                     taskViewModel.reset()
                     projectLayerViewModel.reset()
                     // 传入任务编号
-                    gotoForm(it.title)
+                    gotoForm(it.taskId)
                 }
 
             }

@@ -31,7 +31,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import space.think.cloud.cts.common_datastore.DataStoreUtil
+import space.think.cloud.cts.common_datastore.FormFieldDataStore
 import space.think.cloud.cts.common_datastore.PreferencesKeys
 import space.think.cloud.cts.lib.form.factory.WidgetFactory
 import space.think.cloud.cts.lib.form.viewmodel.FormViewModel
@@ -52,23 +54,35 @@ fun FormScreen(
     val fields by remember { derivedStateOf { formViewModel.fields } }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
 
         val dataStore = DataStoreUtil(context)
         val lon = dataStore.getData(PreferencesKeys.LON_KEY, 0.0).first()
         val lat = dataStore.getData(PreferencesKeys.LAT_KEY, 0.0).first()
-        val fieldBuilder = FieldBuilder()
+        val fieldBuilder = FieldBuilder(FormFieldDataStore(context, project.id))
         fieldBuilder.withLon(lon)
         fieldBuilder.withLat(lat)
 
         // 查询表单模板
-        formViewModel.queryFormTemplateById(
+        formViewModel.getAllData(
             formTemplateId = project.formTemplateId,
-        ) {
-            title = it.title
-            val fields = fieldBuilder.createFields(it.content)
-            formViewModel.updateFields(fields)
+            tableName = project.dataTableName,
+            taskId = code,
+        ) { formTemplate, task, formData ->
+            // 设置名称
+            title = formTemplate.title
+            // 设置任务数据
+            fieldBuilder.withTask(task)
+            // 设置表单采集数据
+            formData?.let {
+                fieldBuilder.withData(formData)
+            }
+            scope.launch {
+                val fields = fieldBuilder.createFields(formTemplate.content)
+                formViewModel.updateFields(fields)
+            }
         }
     }
 

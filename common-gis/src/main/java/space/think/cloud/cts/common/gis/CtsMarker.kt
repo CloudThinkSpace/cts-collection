@@ -3,6 +3,7 @@ package space.think.cloud.cts.common.gis
 import androidx.annotation.DrawableRes
 
 data class CtsMarker(
+    val taskId: String,
     val lon: Double,
     val lat: Double,
     val title: String,

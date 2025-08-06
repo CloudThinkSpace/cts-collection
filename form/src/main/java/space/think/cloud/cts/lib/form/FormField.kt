@@ -6,7 +6,11 @@ import space.think.cloud.cts.lib.ui.utils.StringUtil
 
 data class FormField(
 
+    // 编号
     val id: String,
+
+    // 名称
+    val name: String,
 
     // 类型
     val type: String,

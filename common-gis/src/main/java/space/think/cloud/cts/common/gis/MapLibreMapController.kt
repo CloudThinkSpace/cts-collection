@@ -74,6 +74,7 @@ class MapLibreMapController(
             val feature = features[0]
             val properties = feature.properties()
             val title = properties?.get("code")?.asString ?: "无标题"
+            val taskId = properties?.get("taskId")?.asString ?: ""
 
             // 3. 获取要素的几何位置
             val point = feature.geometry() as Point
@@ -81,6 +82,7 @@ class MapLibreMapController(
 
             // 4. 显示自定义InfoWindow
             selectMarker = CtsMarker(
+                taskId = taskId,
                 lon = latLng.longitude,
                 lat = latLng.latitude,
                 title = title,

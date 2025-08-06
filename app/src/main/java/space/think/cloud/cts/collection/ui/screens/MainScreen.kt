@@ -1,7 +1,10 @@
 package space.think.cloud.cts.collection.ui.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entry
@@ -29,6 +32,7 @@ fun MainScreen(
 ) {
     val topLevelBackStack = remember { TopLevelBackStack<Any>(Project) }
     val backStack = rememberNavBackStack(Home)
+
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeAt(backStack.lastIndex) },
@@ -53,18 +57,21 @@ fun MainScreen(
                 HelpScreen(modifier = modifier)
             }
             entry<TaskMapView> {
+                var taskId by remember { mutableStateOf(it.taskItem?.id) }
                 TaskMapViewScreen(
                     project = it.project,
-                    taskItem = it.taskItem,
+                    selectTaskId = taskId,
                     onBack = {
                         backStack.removeAt(backStack.lastIndex)
                     }
                 ) { taskCode ->
                     // 导航到表单页面，传入任务编号
-                    backStack.add(Form(
-                        code = taskCode,
-                        project = it.project
-                    ))
+                    backStack.add(
+                        Form(
+                            code = taskCode,
+                            project = it.project
+                        )
+                    )
                 }
             }
             entry<TaskList> {
@@ -73,11 +80,11 @@ fun MainScreen(
                     onBack = {
                         backStack.removeAt(backStack.lastIndex)
                     }
-                ) {  taskItem ->
+                ) { taskItem ->
 
                     backStack.add(
                         TaskMapView(
-                            project =it.project,
+                            project = it.project,
                             taskItem
                         )
                     )
@@ -88,7 +95,7 @@ fun MainScreen(
                     modifier = modifier,
                     project = it.project,
                     code = it.code
-                ){
+                ) {
                     backStack.removeAt(backStack.lastIndex)
                 }
             }

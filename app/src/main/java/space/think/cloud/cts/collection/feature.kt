@@ -10,6 +10,7 @@ fun taskItemToFeature(taskItem: TaskItem): Feature {
         Point.fromLngLat(taskItem.lon.toDouble(), taskItem.lat.toDouble()),
         JsonObject().apply {
             addProperty("code", taskItem.code)
+            addProperty("taskId", taskItem.id)
             addProperty("lon", taskItem.lon)
             addProperty("lat", taskItem.lat)
             addProperty("name", taskItem.name)
