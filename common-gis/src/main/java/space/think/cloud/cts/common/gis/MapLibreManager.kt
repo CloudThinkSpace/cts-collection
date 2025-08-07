@@ -58,7 +58,10 @@ class MapLibreManager(
      * @param layerIds 图层列表
      */
     fun setQueryLayer(layerIds: List<String>) {
-        this.layerIds.addAll(layerIds)
+        this.layerIds.apply {
+            clear()
+            addAll(layerIds)
+        }
     }
 
     /**
@@ -321,16 +324,17 @@ class MapLibreManager(
         onFinish: (() -> Unit)? = null
     ) {
         val layerName = "$name-symbol-layer"
+        val sourceName = "$name-symbol-source"
         // 删除图层
         removeLayer(layerName)
         // 构造geoJson数据源
-        val source = GeoJsonSource("$name-symbol-source", FeatureCollection.fromFeatures(features))
-        val sourceName = "$name-symbol-source"
+        val source = GeoJsonSource(sourceName, FeatureCollection.fromFeatures(features))
+        // 移除已经存在的数据源
         removeSource(sourceName)
         // 添加数据源
         addSource(source)
         // 创建样式图层
-        val layer = SymbolLayer("$name-symbol-layer", "$name-symbol-source")
+        val layer = SymbolLayer(layerName, sourceName)
             .withProperties(
                 PropertyFactory.iconSize(1f),
                 PropertyFactory.iconImage(expression),
@@ -339,6 +343,8 @@ class MapLibreManager(
             )
         // 添加图层
         addLayer(layer)
+        // 设置查询图层
+        setQueryLayer(listOf(layerName))
         // 获取要素的所有坐标
         val data = features.map {
             val geometry = it.geometry()
