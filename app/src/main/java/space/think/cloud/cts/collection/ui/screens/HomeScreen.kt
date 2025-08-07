@@ -13,7 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -21,7 +21,7 @@ import space.think.cloud.cts.collection.nav.Dashboard
 import space.think.cloud.cts.collection.nav.Login
 import space.think.cloud.cts.collection.nav.Me
 import space.think.cloud.cts.collection.nav.Project
-import space.think.cloud.cts.collection.nav.TaskList
+import space.think.cloud.cts.collection.nav.TaskMapView
 import space.think.cloud.cts.collection.nav.TopLevelBackStack
 import space.think.cloud.cts.collection.nav.TopLevelRoute
 
@@ -34,8 +34,8 @@ private val HOME_LEVEL_ROUTES: List<TopLevelRoute> = listOf(Project, Dashboard, 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    backStack: NavBackStack,
     topLevelBackStack: TopLevelBackStack<Any>,
+    onNavBackStack:(NavKey)-> Unit
 ) {
 
     Scaffold(
@@ -79,9 +79,10 @@ fun HomeScreen(
                             modifier = Modifier,
                         ) {
                             // 切换到任务列表中
-                            backStack.add(
-                                TaskList(
-                                    project = it
+                            onNavBackStack(
+                                TaskMapView(
+                                    project = it,
+                                    null
                                 )
                             )
                         }
@@ -92,7 +93,9 @@ fun HomeScreen(
                     entry<Me> {
                         ProfileScreen(modifier = Modifier) {
                             // 切换到登录页
-                            backStack.add(Login)
+                            onNavBackStack(
+                                Login
+                            )
                         }
                     }
                 }

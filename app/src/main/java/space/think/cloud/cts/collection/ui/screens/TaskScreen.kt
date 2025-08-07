@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -78,7 +77,7 @@ fun TaskScreen(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("任务列表", fontSize = MaterialTheme.typography.labelLarge.fontSize)
+                        Text("任务列表", fontSize = MaterialTheme.typography.titleMedium.fontSize)
                         Spacer(modifier = Modifier.padding(5.dp))
                         SearchAppBar(
                             modifier = Modifier,
@@ -98,17 +97,6 @@ fun TaskScreen(
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Localized description",
-                            tint = Color.White
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        onClick(null)
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Map,
                             contentDescription = "Localized description",
                             tint = Color.White
                         )

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ControlCamera
+import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -78,8 +79,9 @@ fun TaskMapViewScreen(
     taskViewModel: TaskViewModel = viewModel(key = "taskMap"),
     projectLayerViewModel: ProjectLayerViewModel = viewModel(),
     onSelectTask: (String) -> Unit,
+    goToTaskList: (ProjectData) -> Unit,
     onBack: () -> Unit,
-    gotoForm: (String) -> Unit,
+    goToForm: (String) -> Unit,
 ) {
 
     // 获取任务列表
@@ -249,6 +251,15 @@ fun TaskMapViewScreen(
                             tint = Color.White
                         )
                     }
+                    IconButton(onClick = {
+                        goToTaskList(project)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.FormatListNumbered,
+                            contentDescription = "Localized description",
+                            tint = Color.White
+                        )
+                    }
                 },
             )
         }
@@ -339,7 +350,7 @@ fun TaskMapViewScreen(
                     taskViewModel.reset()
                     projectLayerViewModel.reset()
                     // 传入任务编号
-                    gotoForm(it.taskId)
+                    goToForm(it.taskId)
                 }
 
             }

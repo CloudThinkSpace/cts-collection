@@ -45,8 +45,10 @@ fun MainScreen(
         entryProvider = entryProvider {
             entry<Home> {
                 HomeScreen(
-                    backStack = backStack,
                     topLevelBackStack = topLevelBackStack,
+                    onNavBackStack = {
+                        backStack.add(it)
+                    }
                 )
             }
             entry<Login> {
@@ -65,7 +67,13 @@ fun MainScreen(
                     onSelectTask = {
                         selectTaskId = it
                     },
+                    goToTaskList = {
+                        backStack.add(TaskList(it))
+                    },
                     onBack = {
+                        // 取消选择的任务
+                        selectTaskId = ""
+                        // 返回项目列表
                         backStack.removeAt(backStack.lastIndex)
                     }
                 ) { taskCode ->
@@ -87,13 +95,7 @@ fun MainScreen(
                 ) { taskItem ->
 
                     selectTaskId = taskItem?.id ?: ""
-
-                    backStack.add(
-                        TaskMapView(
-                            project = it.project,
-                            taskItem
-                        )
-                    )
+                    backStack.removeAt(backStack.lastIndex)
                 }
             }
             entry<Form> {
