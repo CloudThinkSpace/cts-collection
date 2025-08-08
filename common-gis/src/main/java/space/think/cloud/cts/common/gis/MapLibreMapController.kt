@@ -80,7 +80,7 @@ class MapLibreMapController(
             val point = feature.geometry() as Point
             val latLng = LatLng(point.latitude(), point.longitude())
 
-            // 4. 显示自定义InfoWindow
+            // 3. 显示自定义InfoWindow
             selectMarker = CtsMarker(
                 taskId = taskId,
                 lon = latLng.longitude,
