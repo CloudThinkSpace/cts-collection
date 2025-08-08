@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.google.gson)
     implementation(libs.androidx.datastore)
     implementation(libs.rhino.android)
+    implementation(libs.okhttp)
     implementation(project(":ui"))
     implementation(project(":network"))
     implementation(project(":common-datastore"))

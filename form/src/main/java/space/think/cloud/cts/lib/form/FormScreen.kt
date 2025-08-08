@@ -1,6 +1,9 @@
 package space.think.cloud.cts.lib.form
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.SaveAs
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,15 +26,19 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.first
@@ -51,17 +59,19 @@ import space.think.cloud.cts.lib.ui.project.ProjectData
 fun FormScreen(
     modifier: Modifier = Modifier,
     project: ProjectData,
-    code: String,
+    taskId: String,
     formViewModel: FormViewModel = viewModel(),
     onBack: () -> Unit
 ) {
 
     // 表单标题
     var title by remember { mutableStateOf("") }
-    // 是否更新表单数据
-    var isUpdate by remember { mutableStateOf(false) }
     // 表单字段列表
     val fields by remember { derivedStateOf { formViewModel.fields } }
+    // 错误信息
+    val errorMsg by formViewModel.error.collectAsState()
+    // 是否提交
+    var isSubmit by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -71,6 +81,8 @@ fun FormScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     // 移动位置
     val lazyListState = rememberLazyListState()
+    // 键盘控制器
+    val localSoftwareKeyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(Unit) {
 
@@ -87,7 +99,7 @@ fun FormScreen(
         formViewModel.getAllData(
             formTemplateId = project.formTemplateId,
             tableName = project.dataTableName,
-            taskId = code,
+            taskId = taskId,
         ) { formTemplate, task, formData ->
 
             // 创建form对象
@@ -101,15 +113,15 @@ fun FormScreen(
                     addAll(it.expressionValidations)
                 }
             }
-
+            formViewModel.setTaskData(task)
             // 设置任务数据
             fieldBuilder.withTask(task)
             // 设置表单采集数据
             if (formData != null) {
                 fieldBuilder.withData(formData)
-                isUpdate = true
+                formViewModel.isUpdate = true
             } else {
-                isUpdate = false
+                formViewModel.isUpdate = false
             }
             // 更新表单
             scope.launch {
@@ -119,89 +131,130 @@ fun FormScreen(
         }
     }
 
+    LaunchedEffect(errorMsg) {
+        errorMsg?.let {
+            snackbarHostState.showSnackbar(it)
+        }
+        isSubmit = false
+    }
+
 
     // 监听返回键
     BackHandler(enabled = true) {
+        formViewModel.reset()
         onBack()
     }
 
-    Scaffold(modifier = modifier, snackbarHost = {
-        SnackbarHost(hostState = snackbarHostState)
-    }, topBar = {
-        CenterAlignedTopAppBar(
-            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                titleContentColor = MaterialTheme.colorScheme.onPrimary,
-            ),
-            title = {
-                Text(
-                    title, maxLines = 1, overflow = TextOverflow.Ellipsis
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = {
-                    onBack()
-                }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        tint = Color.White,
-                        contentDescription = "Localized description"
+    Box {
+
+        Scaffold(modifier = modifier, snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }, topBar = {
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+                title = {
+                    Text(
+                        title, maxLines = 1, overflow = TextOverflow.Ellipsis
                     )
-                }
-            },
-            actions = {
-                IconButton(onClick = {
-                    // 校验管理对象
-                    val validationManager = ValidationManager()
-                    // 添加校验表达式
-                    validationManager.addAll(validationExpressions)
-                    // 校验数据
-                    validationManager.validate(
-                        formViewModel.fields,
-                        onPass = {
-                            // 1、查看是否有多媒体文件，如果有上传文件
-
-                            // 2、重新组织数据并上传表单数据
-
-                        },
-                        onFail = { formField,msg, index ->
-                            scope.launch {
-                                // 更新表单信息
-                                formField?.let{
-                                    formViewModel.updateField(formField)
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        formViewModel.reset()
+                        onBack()
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            tint = Color.White,
+                            contentDescription = "Localized description"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        localSoftwareKeyboardController?.hide()
+                        // 校验管理对象
+                        val validationManager = ValidationManager()
+                        // 添加校验表达式
+                        validationManager.addAll(validationExpressions)
+                        // 校验数据
+                        validationManager.validate(
+                            formViewModel.fields,
+                            onPass = {
+                                isSubmit = true
+                                scope.launch {
+                                    formViewModel.submitData(
+                                        context = context,
+                                        taskId = taskId,
+                                        project = project
+                                    ) {
+                                        isSubmit = false
+                                        Toast.makeText(context, "提交数据成功", Toast.LENGTH_SHORT).show()
+                                        scope.launch {
+                                            formViewModel.reset()
+                                        }
+                                        onBack()
+                                    }
                                 }
-                                // 判断是否需要移动到指定的组件上
-                                lazyListState.animateScrollToItem(index)
-                                // 显示错误信息
-                                snackbarHostState.showSnackbar(msg)
-
+                            },
+                            onFail = { formField, msg, index ->
+                                scope.launch {
+                                    // 更新表单信息
+                                    formField?.let {
+                                        formViewModel.updateField(formField)
+                                    }
+                                    // 判断是否需要移动到指定的组件上
+                                    lazyListState.animateScrollToItem(index)
+                                    // 显示错误信息
+                                    snackbarHostState.showSnackbar(msg)
+                                }
                             }
-                        }
-                    )
-                }) {
-                    Icon(
-                        imageVector = Icons.Filled.SaveAs,
-                        tint = Color.White,
-                        contentDescription = "Localized description"
-                    )
-                }
-            },
-            scrollBehavior = scrollBehavior,
-        )
-    }) { paddingValues ->
-        LazyColumn(
-            modifier = modifier
-                .padding(paddingValues)
-                .fillMaxSize(), state = lazyListState
-        ) {
-            items(
-                items = fields, key = { it.id }) { field ->
+                        )
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.SaveAs,
+                            tint = Color.White,
+                            contentDescription = "Localized description"
+                        )
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+            )
+        }) { paddingValues ->
+            LazyColumn(
+                modifier = modifier
+                    .padding(paddingValues)
+                    .fillMaxSize(), state = lazyListState
+            ) {
+                items(
+                    items = fields,
+                    key = { it.id }
+                ) { field ->
 
-                WidgetFactory.CreateWidget(field) { updated ->
-                    formViewModel.updateField(updated)
+                    WidgetFactory.CreateWidget(field) { updated ->
+                        formViewModel.updateField(updated)
+                    }
                 }
             }
         }
+
+        if (isSubmit) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = Color(0x617E7E7E))
+                    .pointerInteropFilter {
+                        true
+                    }, contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+        }
+
+
     }
+
 
 }

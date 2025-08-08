@@ -1,9 +1,11 @@
 package space.think.cloud.cts.lib.form.viewmodel
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -13,6 +15,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import space.think.cloud.cts.lib.form.FormField
+import space.think.cloud.cts.lib.form.QuestionType
+import space.think.cloud.cts.lib.form.utils.FileUploadUtils
+import space.think.cloud.cts.lib.network.Constants
 import space.think.cloud.cts.lib.network.RetrofitClient
 import space.think.cloud.cts.lib.network.model.request.RequestFormData
 import space.think.cloud.cts.lib.network.model.response.ResponseFormTemplate
@@ -20,6 +25,9 @@ import space.think.cloud.cts.lib.network.model.response.Result
 import space.think.cloud.cts.lib.network.services.FormService
 import space.think.cloud.cts.lib.network.services.FormTemplateService
 import space.think.cloud.cts.lib.network.services.TaskService
+import space.think.cloud.cts.lib.ui.form.MediaItem
+import space.think.cloud.cts.lib.ui.project.ProjectData
+import space.think.cloud.cts.lib.ui.utils.StringUtil
 
 class FormViewModel : ViewModel() {
 
@@ -30,8 +38,10 @@ class FormViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> get() = _error
 
-    // 是否提交数据
-    var isSubmit by mutableStateOf(false)
+    // 是否更新数据
+    var isUpdate by mutableStateOf(false)
+
+    private val taskData: MutableMap<String, Any> = mutableMapOf()
 
     // 表单模板操作接口
     private val formTemplateService = RetrofitClient.createService<FormTemplateService>()
@@ -41,6 +51,14 @@ class FormViewModel : ViewModel() {
 
     // 任务接口
     private val taskService = RetrofitClient.createService<TaskService>()
+
+
+    fun setTaskData(task: Map<String, Any>) {
+        taskData.apply {
+            clear()
+            putAll(task)
+        }
+    }
 
 
     fun getAllData(
@@ -79,6 +97,112 @@ class FormViewModel : ViewModel() {
             }
 
         }
+    }
+
+    suspend fun submitData(
+        context: Context,
+        taskId: String,
+        project: ProjectData,
+        onResult: () -> Unit
+    ) {
+        // 1、查看是否有多媒体文件，如果有上传文件
+        val uploadValue = getMediaItemsMap()
+        // 上传文件
+        uploadFile(context, uploadValue) { mapMap ->
+            // 获取填报数据
+            val result = getResult()
+            // 重新替换照片相关字段值
+            for ((key, value) in mapMap) {
+                result[key] = StringUtil.mapToString(value)
+            }
+            // 设置常用字段
+            result[Constants.Form.LAT] = taskData[Constants.Form.LAT].toString()
+            result[Constants.Form.LON] = taskData[Constants.Form.LON].toString()
+            result[Constants.Form.CODE] = taskData[Constants.Form.CODE].toString()
+            result[Constants.Form.STATUS] = "0"
+            // 提交或更新数据
+            val param = RequestFormData(
+                taskId = taskId,
+                name = project.dataTableName,
+                data = result
+            )
+            if (!isUpdate) {
+                // 提交数据
+                createFromData(param, onResult)
+            } else {
+                // 更新数据
+                updateFormData(param, onResult)
+            }
+        }
+    }
+
+    private suspend fun uploadFile(
+        context: Context,
+        imageMaps: Map<String, Map<Int, MediaItem>>,
+        onResult: (Map<String, Map<Int, MediaItem>>) -> Unit
+    ) {
+        val result = mutableMapOf<String, Map<Int, MediaItem>>()
+        // 遍历不同问题的照片map对象
+        for ((key, value) in imageMaps) {
+
+            val imageMap = mutableMapOf<Int, MediaItem>()
+            // 遍历问题待上传的图片
+            for ((keyInt, imageItem) in value) {
+                // 判断是否包含http，包含代表已经上传不需重复上传
+                if (!imageItem.path.isNullOrEmpty() &&
+                    !imageItem.path!!.contains("http")
+                ) {
+                    val response = try {
+                        val formData =
+                            FileUploadUtils.createImagePart(context, imageItem.path!!.toUri())
+                        // 上传文件
+                        formData?.let {
+                            formService.uploadFile(formData)
+                        }
+
+                    } catch (_: Exception) {
+                        Result(code = 500, msg = "上传文件失败")
+                    }
+
+                    if (response?.code != 200) {
+                        _error.value = "上传文件失败"
+                    }
+
+                    response?.data?.let {
+
+                        if (it.isNotEmpty()) {
+                            val url = it[0].path
+                            // 重新组装图片路径
+                            imageItem.path = "${RetrofitClient.getBaseUrl()}api/image${url}"
+                        }
+                    }
+                }
+                // 收集imageItem数据
+                imageMap[keyInt] = imageItem
+            }
+            // 收集imageMap数据
+            result[key] = imageMap
+
+        }
+
+        onResult(result)
+    }
+
+    private fun getMediaItemsMap(): Map<String, Map<Int, MediaItem>> {
+        val data = fields.filter { formField ->
+            formField.type == QuestionType.ImageType.type || formField.type == QuestionType.VideoType.type
+        }.associate {
+            it.name to StringUtil.jsonToMap(it.value)
+        }
+        return data
+    }
+
+    private fun getResult(): MutableMap<String, String> {
+        return fields.filter {
+            it.type != QuestionType.SectionType.type
+        }.associate {
+            it.name to it.value
+        }.toMutableMap()
     }
 
 
@@ -123,17 +247,27 @@ class FormViewModel : ViewModel() {
     /**
      * <h2>创建表单数据</h2>
      */
-    fun createFromData(formData: RequestFormData) =
-        launch({ formService.createFromData(formData) }) {
-            isSubmit = true
+    fun createFromData(formData: RequestFormData, onResult: () -> Unit) =
+        launch(
+            { formService.createFromData(formData) },
+            {
+                _error.value = it
+            }
+        ) {
+            onResult()
         }
 
     /**
      * <h2>更新表单数据</h2>
      */
-    fun updateFormData(formData: RequestFormData) =
-        launch({ formService.updateFormData(formData) }) {
-            isSubmit = true
+    fun updateFormData(formData: RequestFormData, onResult: () -> Unit) =
+        launch(
+            { formService.updateFormData(formData) },
+            {
+                _error.value = it
+            }
+        ) {
+            onResult()
         }
 
     /**
@@ -154,7 +288,7 @@ class FormViewModel : ViewModel() {
     }
 
     private fun <T> launch(
-        block: suspend () -> space.think.cloud.cts.lib.network.model.response.Result<T>,
+        block: suspend () -> Result<T>,
         errorFun: ((String) -> Unit)? = null,
         onCallBack: (() -> Unit)? = null,
         successFun: (T?) -> Unit
@@ -169,7 +303,7 @@ class FormViewModel : ViewModel() {
             }
             onCallBack?.invoke()
             if (result.code != 200) {
-                result.msg.apply {
+                result.msg?.apply {
                     errorFun?.invoke(this)
                     _error.value = this
                 }
@@ -180,6 +314,9 @@ class FormViewModel : ViewModel() {
 
     fun reset() {
         _error.value = null
+        _fields.clear()
+        isUpdate = false
+        taskData.clear()
     }
 
 }

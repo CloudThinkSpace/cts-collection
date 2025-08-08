@@ -30,6 +30,10 @@ object RetrofitClient {
             .build()
     }
 
+    fun getBaseUrl(): String {
+        return BASE_URL
+    }
+
     fun <T> createService(serviceClass: Class<T>): T {
         return retrofit.create(serviceClass)
     }

@@ -28,6 +28,7 @@ import org.maplibre.geojson.Point
 import space.think.cloud.cts.common.gis.source.cts.RasterSourceBuilder
 
 const val BACKGROUND_LAYER_NAME = "cts_background-layer"
+const val DEFAULT_ZOOM = 10.0
 
 class MapLibreManager(
     private val context: Context,
@@ -35,6 +36,7 @@ class MapLibreManager(
     private val backgroundColor: String = "#FFFFFF",
     private val backgroundOpacity: Float = 1.0f,
 ) : MapLibreMap.OnMapClickListener {
+
 
     // 地图style
     private lateinit var style: Style
@@ -137,7 +139,7 @@ class MapLibreManager(
      */
     fun animateToLatLng(
         latLng: LatLng,
-        zoom: Double = 10.0,
+        zoom: Double = DEFAULT_ZOOM,
         delay: Int = 2000,
         onFinish: (() -> Unit)? = null
     ) {

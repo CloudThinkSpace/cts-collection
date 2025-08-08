@@ -276,7 +276,7 @@ fun TaskMapViewScreen(
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(10.dp),
+                    .padding(top = 50.dp, bottom = 20.dp),
                 verticalArrangement = Arrangement.SpaceBetween
 
             ) {
@@ -345,6 +345,7 @@ fun TaskMapViewScreen(
 
                 }
             ) {
+                operationBottomSheet = false
                 // 打开表单页
                 currentMarker?.let {
                     taskViewModel.reset()

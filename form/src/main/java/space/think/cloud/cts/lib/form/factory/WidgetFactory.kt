@@ -1,6 +1,5 @@
 package space.think.cloud.cts.lib.form.factory
 
-import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,7 +40,7 @@ object WidgetFactory {
         when (localField.type) {
             QuestionType.TextType.type -> {
                 TextWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -58,7 +57,7 @@ object WidgetFactory {
 
             QuestionType.UserType.type -> {
                 TextWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -75,7 +74,7 @@ object WidgetFactory {
 
             QuestionType.IntegerType.type -> {
                 IntegerWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -92,7 +91,7 @@ object WidgetFactory {
 
             QuestionType.NumberType.type -> {
                 NumberWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -109,7 +108,7 @@ object WidgetFactory {
 
             QuestionType.LongitudeType.type -> {
                 NumberWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -126,7 +125,7 @@ object WidgetFactory {
 
             QuestionType.LatitudeType.type -> {
                 NumberWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -143,7 +142,7 @@ object WidgetFactory {
 
             QuestionType.AddressType.type -> {
                 TextWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -160,7 +159,7 @@ object WidgetFactory {
 
             QuestionType.EmailType.type -> {
                 EmailWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -177,7 +176,7 @@ object WidgetFactory {
 
             QuestionType.PasswordType.type -> {
                 PasswordWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -198,7 +197,7 @@ object WidgetFactory {
 
             QuestionType.SingleChoiceType.type -> {
                 SingleChoiceWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -220,7 +219,7 @@ object WidgetFactory {
 
             QuestionType.MoreChoiceType.type -> {
                 MoreChoiceWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,
@@ -245,7 +244,7 @@ object WidgetFactory {
 
             QuestionType.CheckType.type -> {
                 CheckWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     errorMsg = localField.error,
                     required = localField.required,
@@ -268,7 +267,7 @@ object WidgetFactory {
 
             QuestionType.RadioType.type -> {
                 RadioWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     errorMsg = localField.error,
                     required = localField.required,
@@ -289,7 +288,7 @@ object WidgetFactory {
 
             QuestionType.DateType.type -> {
                 DateWidget(
-                    value = localField.getFieldValue(),
+                    value = localField.value,
                     title = localField.title,
                     unit = localField.unit,
                     errorMsg = localField.error,

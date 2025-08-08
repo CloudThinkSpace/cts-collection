@@ -70,13 +70,13 @@ class MapLibreMapController(
     private fun handleMapClick(features: List<Feature>) {
 
         if (features.isNotEmpty()) {
-            // 2. 获取第一个要素的属性
+            // 1. 获取第一个要素的属性
             val feature = features[0]
             val properties = feature.properties()
             val title = properties?.get("code")?.asString ?: "无标题"
             val taskId = properties?.get("taskId")?.asString ?: ""
 
-            // 3. 获取要素的几何位置
+            // 2. 获取要素的几何位置
             val point = feature.geometry() as Point
             val latLng = LatLng(point.latitude(), point.longitude())
 
@@ -89,7 +89,7 @@ class MapLibreMapController(
                 description = "",
                 icon = R.drawable.location_blue
             ).apply {
-                if (mapLibreManager.getCurrentZoom() >= 10.0) {
+                if (mapLibreManager.getCurrentZoom() >= DEFAULT_ZOOM) {
                     showInfoWindow(this)
                 } else {
                     mapLibreManager.animateToLatLng(latLng) {
@@ -146,7 +146,7 @@ class MapLibreMapController(
 
     fun animateToLatLng(
         latLng: LatLng,
-        zoom: Double = 10.0,
+        zoom: Double = DEFAULT_ZOOM,
         delay: Int = 2000,
         onFinish: (() -> Unit)? = null
     ) {

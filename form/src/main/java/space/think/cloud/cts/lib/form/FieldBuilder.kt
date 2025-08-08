@@ -77,7 +77,6 @@ class FieldBuilder(private val dataStore: FormFieldDataStore) {
                 error = question.error,
                 unit = question.unit,
                 description = question.description,
-                defaultValue = question.defaultValue,
                 lineMaxNum = question.lineMaxNum,
                 placeholder = question.placeholder ?: "",
                 items = question.items
@@ -105,7 +104,7 @@ class FieldBuilder(private val dataStore: FormFieldDataStore) {
      */
     private fun handlerData(question: Question): String? {
         val value = dataMap[question.name]
-        return value?.toString() ?: ""
+        return value?.toString()
     }
 
     /**
@@ -139,7 +138,7 @@ class FieldBuilder(private val dataStore: FormFieldDataStore) {
         val taskValue = if (autoMap != null) handlerTask(question, autoMap) else ""
         // 获取缓存数据
         val cacheValue = handlerCache(question)
-        val value = dataValue ?: taskValue.coalesceWith(locationValue).coalesceWith(cacheValue)
+        val value = dataValue ?: taskValue.coalesceWith(locationValue).coalesceWith(cacheValue).coalesceWith(question.defaultValue)
         return value ?: ""
     }
 

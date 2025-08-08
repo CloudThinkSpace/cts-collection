@@ -30,7 +30,7 @@ open class BaseViewModel : ViewModel() {
             }
             onCallBack?.invoke()
             if (result.code != 200) {
-                result.msg.apply {
+                result.msg?.apply {
                     errorFun?.invoke(this)
                     _error.value = this
                 }

@@ -39,9 +39,6 @@ data class FormField(
     // 描述
     val description: String? = null,
 
-    // 默认值
-    val defaultValue: String? = null,
-
     // 最大行数
     val lineMaxNum: Int? = null,
 
@@ -54,15 +51,8 @@ data class FormField(
     // 默认显示值
     val placeholder: String = "",
 ) {
-    fun getFieldValue(): String {
-        return if (value.isEmpty() && defaultValue != null) {
-            defaultValue
-        } else {
-            value
-        }
-    }
 
     fun getMediasToMap(): Map<Int, MediaItem> {
-        return StringUtil.jsonToMap(getFieldValue())
+        return StringUtil.jsonToMap(value)
     }
 }
