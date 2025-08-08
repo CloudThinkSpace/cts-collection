@@ -1,10 +1,9 @@
 package space.think.cloud.cts.lib.form
 
 import android.icu.text.DecimalFormat
-import com.google.gson.Gson
 import kotlinx.coroutines.flow.first
 import space.think.cloud.cts.common_datastore.FormFieldDataStore
-import space.think.cloud.cts.lib.form.model.FormConfig
+import space.think.cloud.cts.lib.form.model.Form
 import space.think.cloud.cts.lib.form.model.Question
 
 class FieldBuilder(private val dataStore: FormFieldDataStore) {
@@ -56,11 +55,8 @@ class FieldBuilder(private val dataStore: FormFieldDataStore) {
     }
 
 
-    suspend fun createFields(content: String): List<FormField> {
-        val gson = Gson()
-        // 序列号成formConfig 对象
-        val formConfig = gson.fromJson(content, FormConfig::class.java)
-        val form = formConfig.form
+    suspend fun createFields(form: Form): List<FormField> {
+
         // 值从任务数据中匹配的
         val autoMap = form.auto
         // 将question 转换成formField对象

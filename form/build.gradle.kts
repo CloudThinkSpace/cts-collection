@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.google.gson)
     implementation(libs.androidx.datastore)
+    implementation(libs.rhino.android)
     implementation(project(":ui"))
     implementation(project(":network"))
     implementation(project(":common-datastore"))

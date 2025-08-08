@@ -30,7 +30,7 @@ import space.think.cloud.cts.lib.ui.utils.StringUtil
 object WidgetFactory {
 
     @Composable
-    fun CreateWidget(field: FormField, onChange:(FormField)-> Unit){
+    fun CreateWidget(field: FormField, onChange: (FormField) -> Unit) {
 
         val context = LocalContext.current
         // 使用独立的状态管理
@@ -50,7 +50,7 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     description = localField.description
                 ) { newValue ->
-                    val updated = localField.copy(value = newValue)
+                    val updated = localField.copy(value = newValue, error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -67,7 +67,7 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     description = localField.description
                 ) { newValue ->
-                    val updated = localField.copy(value = newValue)
+                    val updated = localField.copy(value = newValue, error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -84,7 +84,7 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     description = localField.description
                 ) { newValue ->
-                    val updated = localField.copy(value = newValue)
+                    val updated = localField.copy(value = newValue, error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -101,7 +101,7 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     description = localField.description
                 ) { newValue ->
-                    val updated = localField.copy(value = newValue)
+                    val updated = localField.copy(value = newValue, error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -118,7 +118,7 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     description = localField.description
                 ) { newValue ->
-                    val updated = localField.copy(value = newValue)
+                    val updated = localField.copy(value = newValue, error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -135,7 +135,7 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     description = localField.description
                 ) { newValue ->
-                    val updated = localField.copy(value = newValue)
+                    val updated = localField.copy(value = newValue, error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -152,7 +152,7 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     description = localField.description
                 ) { newValue ->
-                    val updated = localField.copy(value = newValue)
+                    val updated = localField.copy(value = newValue, error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -169,7 +169,7 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     description = localField.description
                 ) { newValue ->
-                    val updated = localField.copy(value = newValue)
+                    val updated = localField.copy(value = newValue, error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -186,7 +186,7 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     description = localField.description
                 ) { newValue ->
-                    val updated = localField.copy(value = newValue)
+                    val updated = localField.copy(value = newValue, error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -210,7 +210,8 @@ object WidgetFactory {
                 ) { newValue ->
                     val updated = localField.copy(
                         value = newValue.code,
-                        items = field.items
+                        items = field.items,
+                        error = null
                     )
                     localField = updated
                     onChange(updated)
@@ -234,7 +235,8 @@ object WidgetFactory {
                         value = newValue.joinToString(",") { checkItem ->
                             checkItem.code
                         },
-                        items = field.items
+                        items = field.items,
+                        error = null
                     )
                     localField = updated
                     onChange(updated)
@@ -256,7 +258,8 @@ object WidgetFactory {
                         value = newValue.joinToString(",") { checkItem ->
                             checkItem.code
                         },
-                        items = field.items
+                        items = field.items,
+                        error = null
                     )
                     localField = updated
                     onChange(updated)
@@ -276,7 +279,8 @@ object WidgetFactory {
                 ) { newValue ->
                     val updated = localField.copy(
                         value = newValue.code,
-                        items = field.items
+                        items = field.items,
+                        error = null
                     )
                     localField = updated
                     onChange(updated)
@@ -294,7 +298,7 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     description = localField.description,
                 ) { newValue ->
-                    val updated = localField.copy(value = newValue)
+                    val updated = localField.copy(value = newValue, error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -321,7 +325,8 @@ object WidgetFactory {
                         context.startActivity(intent)
                     }
                 ) { newValue ->
-                    val updated = localField.copy(value = StringUtil.mapToString(newValue))
+                    val updated =
+                        localField.copy(value = StringUtil.mapToString(newValue), error = null)
                     localField = updated
                     onChange(updated)
                 }
@@ -338,7 +343,8 @@ object WidgetFactory {
                     subTitles = localField.subTitles ?: listOf(),
                     description = localField.description,
                 ) { newValue ->
-                    val updated = localField.copy(value = StringUtil.mapToString(newValue))
+                    val updated =
+                        localField.copy(value = StringUtil.mapToString(newValue), error = null)
                     localField = updated
                     onChange(updated)
                 }
