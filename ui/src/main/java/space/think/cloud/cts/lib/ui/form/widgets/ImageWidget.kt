@@ -17,17 +17,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import kotlinx.coroutines.launch
-import space.think.cloud.cts.lib.ui.form.MediaItem
 import space.think.cloud.cts.lib.ui.form.ImageView
-import space.think.cloud.cts.lib.ui.utils.DateUtil
-import space.think.cloud.cts.lib.ui.utils.ImageUtil
-import java.util.Date
+import space.think.cloud.cts.lib.ui.form.MediaItem
 import kotlin.math.ceil
 
 /**
@@ -52,7 +48,8 @@ fun ImageWidget(
     enabled: Boolean = true,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onPreview: ((Uri) -> Unit)? = null,
-    onChangeValue: (Map<Int, MediaItem>) -> Unit,
+    onDelete:(Int)-> Unit,
+    onChangeValue: suspend (String, index: Int) -> Unit,
 ) {
 
     // 键盘控制器
@@ -71,8 +68,6 @@ fun ImageWidget(
     }
 
     val scope = rememberCoroutineScope()
-
-    val context = LocalContext.current
 
     // 加载中
     var loading by remember {
@@ -128,37 +123,10 @@ fun ImageWidget(
                         path?.let {
                             // 处理图片，添加水印
                             scope.launch {
-                                // 准备表格数据
-                                val tableData = listOf(
-                                    listOf("经度:", "1"),
-                                    listOf("纬度:", "1"),
-                                    listOf("地址:", "1"),
-                                    listOf(
-                                        "时间:",
-                                        DateUtil.dateToString(Date(), "yyyy年MM月dd日 HH:mm:ss")
-                                    )
-                                )
-
-                                // 加水印并保存图片
-                                ImageUtil.printWatermark(
-                                    context,
-                                    tableData = tableData,
-                                    uri = path.toUri()
-                                ) {
-                                    // 更新图片
-                                    val temp = value.toMutableMap()
-                                    temp[selectIndex] =
-                                        MediaItem(
-                                            name = subTitles[selectIndex],
-                                            path = it.toString()
-                                        )
-                                    onChangeValue(temp.toMap())
-                                    loading = false
-                                }
+                                onChangeValue(it, selectIndex)
+                                loading = false
                             }
                         }
-
-
                     }
                 }
             }
@@ -176,9 +144,7 @@ fun ImageWidget(
         confirmButton = {
             TextButton(onClick = {
                 isOpenDelete = false
-                val temp = value.toMutableMap()
-                temp.remove(currentImageIndex)
-                onChangeValue(temp.toMap())
+                onDelete(currentImageIndex)
 
             }) {
                 Text(text = "确定")
