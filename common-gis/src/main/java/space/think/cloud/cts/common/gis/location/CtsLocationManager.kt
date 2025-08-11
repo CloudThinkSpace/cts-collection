@@ -9,15 +9,20 @@ import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import space.think.cloud.cts.common.gis.MapLibreMapController
+import space.think.cloud.cts.common.gis.geocode.GeoCode
+import space.think.cloud.cts.common.gis.geocode.GeoCodeResult
 import space.think.cloud.cts.common_datastore.DataStoreUtil
 import space.think.cloud.cts.common_datastore.PreferencesKeys
 
@@ -49,12 +54,14 @@ class CtsLocationManager(private val context: ComponentActivity) {
         }
     }
 
+    @Suppress("unused")
     private fun isLocationEnabled(): Boolean {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
+    @Suppress("unused")
     private fun showEnableLocationDialog() {
         AlertDialog.Builder(context)
             .setTitle("启用位置服务")
@@ -114,8 +121,12 @@ class CtsLocationManager(private val context: ComponentActivity) {
             when (state) {
                 is EnhancedNativeLocationHelper.LocationState.Located -> {
                     syncScope.launch {
+                        // 保存坐标
                         saveLocation(state.location)
+                        // 请求地址并，保存地址
+                        saveAddress(state.location)
                     }
+
                 }
 
                 is EnhancedNativeLocationHelper.LocationState.Timeout,
@@ -136,6 +147,7 @@ class CtsLocationManager(private val context: ComponentActivity) {
         locationHelper.stopLocationUpdates()
     }
 
+    @Suppress("unused")
     private fun showPermissionDeniedMessage() {
         AlertDialog.Builder(context)
             .setTitle("需要位置权限")
@@ -178,12 +190,27 @@ class CtsLocationManager(private val context: ComponentActivity) {
         dataStoreUtil.saveData(PreferencesKeys.LON_KEY, location.longitude)
         dataStoreUtil.saveData(PreferencesKeys.LAT_KEY, location.latitude)
         // 是否有方位信息
-        if (location.hasBearing()){
+        if (location.hasBearing()) {
             dataStoreUtil.saveData(PreferencesKeys.BEARING_KEY, location.bearing)
         }
         // 是否有高程信息
-        if (location.hasAltitude()){
+        if (location.hasAltitude()) {
             dataStoreUtil.saveData(PreferencesKeys.ALTITUDE_KEY, location.altitude)
+        }
+    }
+
+    private suspend fun saveAddress(location: Location) {
+        val response = GeoCode.get(location.longitude, location.latitude, MapLibreMapController.TDT_TOKEN)
+        // 解析数据
+        val gson = Gson()
+        val geoCodeResult = gson.fromJson(response, GeoCodeResult::class.java)
+        // 判断是否有结果
+        if (geoCodeResult.msg == "ok") {
+            geoCodeResult.result?.let {
+                dataStoreUtil.saveData(PreferencesKeys.ADDRESS_KEY, it.formattedAddress)
+            }
+        }else{
+            Log.w("geocode warning",geoCodeResult.msg)
         }
     }
 

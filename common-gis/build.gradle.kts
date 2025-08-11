@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.maplibre.annotation)
     implementation(libs.androidx.work)
     implementation(libs.androidx.datastore)
+    implementation(libs.okhttp)
     implementation(project(":common-datastore"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

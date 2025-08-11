@@ -22,8 +22,11 @@ class MapLibreMapController(
     maplibreMap: MapLibreMap
 ) {
 
-    // 默认点位图层名
-    private val defaultMarkerSymbolName = "cts-marker"
+    companion object {
+        // 天地图token
+        const val TDT_TOKEN = "e6ed3fdaf6ca24a041d8dcb69ab279f2"
+        const val DEFAULT_MARKER_SYMBOL_NAME = "cts-marker"
+    }
 
     // 被选中的点位
     private var selectCtsMarker: CtsMarker? = null
@@ -39,7 +42,7 @@ class MapLibreMapController(
     init {
         mapLibreManager.onStyle { style ->
             // 初始化天地图
-            addTdtLayers(style, "e6ed3fdaf6ca24a041d8dcb69ab279f2")
+            addTdtLayers(style, TDT_TOKEN)
         }
         // 显示定位
         mapLibreManager.setLocationEnable(true)
@@ -67,7 +70,7 @@ class MapLibreMapController(
     /**
      * 设置选择的要素
      */
-    fun setSelectCtsMarker(marker: CtsMarker){
+    fun setSelectCtsMarker(marker: CtsMarker) {
         this.selectCtsMarker = marker
     }
 
@@ -110,7 +113,7 @@ class MapLibreMapController(
     }
 
     fun addSymbolLayer(
-        name: String = defaultMarkerSymbolName,
+        name: String = DEFAULT_MARKER_SYMBOL_NAME,
         expression: Expression,
         features: List<Feature>
     ) {
