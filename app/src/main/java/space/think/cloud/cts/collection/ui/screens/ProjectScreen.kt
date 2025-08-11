@@ -37,35 +37,45 @@ fun ProjectScreen(
     onClick: (ProjectData) -> Unit
 ) {
 
+    val context = LocalContext.current
     // 获取项目列表
     val projectList by projectViewModel.data.collectAsState()
-
+    // 查询条件
     var searchValue by remember { mutableStateOf("") }
-
+    // 是否登录判断
     var isLogin by remember {
         mutableStateOf(false)
     }
-    var checkToken by remember {
+    // 数据加载中
+    var isLoading by remember {
         mutableStateOf(true)
     }
 
     LaunchedEffect(searchValue) {
-        // 请求项目列表
-        if (isLogin)
-            projectViewModel.search(searchValue)
+
+        if (isLogin){
+            isLoading = true
+            // 请求项目列表
+            projectViewModel.search(searchValue){
+                isLoading = false
+            }
+        }
+
     }
 
-    val context = LocalContext.current
-
     LaunchedEffect(Unit) {
+        // 从dataStore中获取token
         val dataStoreManage = DataStoreManage(context = context)
         val token = dataStoreManage.getToken()
-        checkToken = false
+        isLoading = true
         if (token.isNotEmpty()) {
             isLogin = true
-            projectViewModel.search(searchValue)
+            projectViewModel.search(searchValue){
+                isLoading = false
+            }
         }else{
             projectViewModel.reset()
+            isLoading = false
         }
     }
 
@@ -88,7 +98,7 @@ fun ProjectScreen(
                 onClick = onClick,
             )
         } else {
-            if (checkToken == true) {
+            if (isLoading == true) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }

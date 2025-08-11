@@ -4,14 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import kotlinx.coroutines.flow.first
-import org.maplibre.android.annotations.Marker
-import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.MapView
 import org.maplibre.android.style.expressions.Expression
 import org.maplibre.geojson.Feature
-import org.maplibre.geojson.Point
+import space.think.cloud.cts.common.gis.MapLibreManager.Companion.DEFAULT_ZOOM
 import space.think.cloud.cts.common.gis.layer.addTdtLayers
 import space.think.cloud.cts.common_datastore.DataStoreUtil
 import space.think.cloud.cts.common_datastore.PreferencesKeys
@@ -19,17 +18,18 @@ import space.think.cloud.cts.common_datastore.PreferencesKeys
 @SuppressLint("MissingPermission")
 class MapLibreMapController(
     val context: Context,
-    val maplibreMap: MapLibreMap
+    mapView: MapView,
+    maplibreMap: MapLibreMap
 ) {
 
     // 默认点位图层名
     private val defaultMarkerSymbolName = "cts-marker"
 
-    // 被选中的图标
-    private var selectMarker: CtsMarker? = null
+    // 被选中的点位
+    private var selectCtsMarker: CtsMarker? = null
 
     // 地图管理器
-    private val mapLibreManager = MapLibreManager(context, maplibreMap)
+    private val mapLibreManager = MapLibreManager(context, mapView, maplibreMap)
 
     private val dataStoreUtil = DataStoreUtil(context)
 
@@ -47,6 +47,12 @@ class MapLibreMapController(
         mapLibreManager.addMapClickListener { features ->
             handleMapClick(features)
         }
+        // 添加地图移动事件
+        mapLibreManager.addMoveListener {
+            selectCtsMarker?.let {
+                mapLibreManager.updateInfoWindow(it)
+            }
+        }
     }
 
     /**
@@ -56,6 +62,13 @@ class MapLibreMapController(
         latLngBounds?.let {
             mapLibreManager.animateToBounds(it)
         }
+    }
+
+    /**
+     * 设置选择的要素
+     */
+    fun setSelectCtsMarker(marker: CtsMarker){
+        this.selectCtsMarker = marker
     }
 
     /**
@@ -73,30 +86,17 @@ class MapLibreMapController(
             // 1. 获取第一个要素的属性
             val feature = features[0]
             val properties = feature.properties()
-            val title = properties?.get("code")?.asString ?: "无标题"
-            val taskId = properties?.get("taskId")?.asString ?: ""
 
-            // 2. 获取要素的几何位置
-            val point = feature.geometry() as Point
-            val latLng = LatLng(point.latitude(), point.longitude())
-
-            // 3. 显示自定义InfoWindow
-            selectMarker = CtsMarker(
-                taskId = taskId,
-                lon = latLng.longitude,
-                lat = latLng.latitude,
-                title = title,
-                description = "",
-                icon = R.drawable.location_blue
-            ).apply {
-                if (mapLibreManager.getCurrentZoom() >= DEFAULT_ZOOM) {
-                    showInfoWindow(this)
-                } else {
-                    mapLibreManager.animateToLatLng(latLng) {
+            properties?.let {
+                selectCtsMarker = CtsMarker.fromJson(it).apply {
+                    if (mapLibreManager.getCurrentZoom() >= DEFAULT_ZOOM) {
                         showInfoWindow(this)
+                    } else {
+                        mapLibreManager.animateToLatLng(LatLng(this.lat, this.lon)) {
+                            showInfoWindow(this)
+                        }
                     }
                 }
-
             }
 
         } else {
@@ -130,18 +130,15 @@ class MapLibreMapController(
     }
 
     fun onInfoWindowClickListener(onClick: (CtsMarker) -> Unit) {
-        maplibreMap.onInfoWindowClickListener = object : MapLibreMap.OnInfoWindowClickListener {
-            override fun onInfoWindowClick(marker: Marker): Boolean {
-                selectMarker?.let {
-                    onClick(it)
-                }
-                return true
+        mapLibreManager.addOnInfoWindowListener {
+            selectCtsMarker?.let {
+                onClick(it)
             }
         }
     }
 
     fun toggleLayer(layerId: String, visible: Boolean) {
-        mapLibreManager.setLayerVisible(layerId, visible)
+        mapLibreManager.setRasterLayerVisible(layerId, visible)
     }
 
     fun animateToLatLng(
@@ -164,23 +161,18 @@ class MapLibreMapController(
     }
 
     // 显示InfoWindow
-    fun showInfoWindow(marker: CtsMarker) {
-        selectMarker = marker
-        val markerOptions = MarkerOptions().apply {
-            position = LatLng(marker.lat, marker.lon)
-            title = marker.title
-        }
-        maplibreMap.selectMarker(Marker(markerOptions))
-    }
-
-    // 显示InfoWindow
-    fun showInfoWindow(marker: Marker) {
-        maplibreMap.selectMarker(marker)
+    fun showInfoWindow(ctsMarker: CtsMarker) {
+        mapLibreManager.showInfoWindow(
+            LatLng(ctsMarker.lat, ctsMarker.lon),
+            ctsMarker.title,
+            ctsMarker.lon.toString(),
+            ctsMarker.lat.toString()
+        )
     }
 
     // 隐藏InfoWindow
     fun hideInfoWindow() {
-        maplibreMap.deselectMarkers()
+        mapLibreManager.hideInfoWindow()
     }
 
 }

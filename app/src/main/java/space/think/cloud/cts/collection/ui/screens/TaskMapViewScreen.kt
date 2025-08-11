@@ -61,6 +61,7 @@ import space.think.cloud.cts.collection.viewmodel.TaskViewModel
 import space.think.cloud.cts.common.gis.CtsMarker
 import space.think.cloud.cts.common.gis.MapLibreMapController
 import space.think.cloud.cts.common.gis.MapLibreMapView
+import space.think.cloud.cts.common.gis.Marker
 import space.think.cloud.cts.common.gis.runtime.awaitMap
 import space.think.cloud.cts.common.gis.runtime.rememberMapViewWithLifecycle
 import space.think.cloud.cts.common.gis.utils.DrawableUtils
@@ -86,9 +87,9 @@ fun TaskMapViewScreen(
 
     // 获取任务列表
     val taskList by taskViewModel.data.collectAsState()
-
+    // 项目图层
     val projectLayers by projectLayerViewModel.data.collectAsState()
-
+    // 地图控制器
     var mapLibreMapController: MapLibreMapController? by remember {
         mutableStateOf(null)
     }
@@ -100,20 +101,20 @@ fun TaskMapViewScreen(
     var layerBottomSheet by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-
+    // 当前选中的图标
     var currentMarker: CtsMarker? by remember {
         mutableStateOf(null)
     }
-
+    // 加载的位置
     var loadingIndex by remember { mutableIntStateOf(0) }
 
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(mapView) {
         val maplibreMap = mapView.awaitMap()
-        mapLibreMapController = MapLibreMapController(context, maplibreMap)
+        mapLibreMapController = MapLibreMapController(context, mapView, maplibreMap)
         // 添加infoWindow 点击事件
-        mapLibreMapController?.onInfoWindowClickListener {
+        mapLibreMapController?.onInfoWindowClickListener { it ->
             currentMarker = it
             onSelectTask(it.taskId)
             operationBottomSheet = true
@@ -176,9 +177,11 @@ fun TaskMapViewScreen(
                             lon = lon,
                             lat = lat,
                             title = it.code,
+                            code = it.code,
                             description = it.name,
-                            icon = R.drawable.location_red
-                        )
+                        ).apply {
+                            mapLibreMapController?.setSelectCtsMarker(this)
+                        }
                     }
                     val feature = taskItemToFeature(it)
                     features.add(feature)
@@ -186,7 +189,7 @@ fun TaskMapViewScreen(
                 // 添加默认样式图层
                 mapLibreMapController?.addSymbolLayer(
                     expression = Expression.match(
-                        Expression.get("status"),
+                        Expression.get(Marker.STATUS),
                         Expression.literal("marker-blue"),
                         Expression.stop(0, "marker-blue"),
                         Expression.stop(1, "marker-red")
@@ -283,6 +286,7 @@ fun TaskMapViewScreen(
 
                 IconButton(onClick = {
                     mapLibreMapController?.goFullBounds()
+                    mapLibreMapController?.hideInfoWindow()
 
                 }) {
                     Icon(Icons.Filled.Home, tint = Color.White, contentDescription = null)

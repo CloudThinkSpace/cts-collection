@@ -7,6 +7,7 @@ plugins {
 android {
     namespace = "space.think.cloud.cts.common.gis"
     compileSdk = 36
+    resourcePrefix = "common_gis_"
 
     defaultConfig {
         minSdk = 24

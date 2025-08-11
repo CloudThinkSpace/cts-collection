@@ -5,6 +5,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewTreeObserver
+import android.widget.TextView
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
@@ -12,6 +16,7 @@ import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.location.LocationComponentActivationOptions
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapLibreMap.CancelableCallback
+import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.BackgroundLayer
@@ -26,16 +31,30 @@ import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 import space.think.cloud.cts.common.gis.source.cts.RasterSourceBuilder
+import space.think.cloud.cts.common.gis.utils.DpUtils
 
-const val BACKGROUND_LAYER_NAME = "cts_background-layer"
-const val DEFAULT_ZOOM = 10.0
 
 class MapLibreManager(
     private val context: Context,
+    private val mapView: MapView,
     private val maplibreMap: MapLibreMap,
     private val backgroundColor: String = "#FFFFFF",
     private val backgroundOpacity: Float = 1.0f,
-) : MapLibreMap.OnMapClickListener {
+) : MapLibreMap.OnMapClickListener, MapLibreMap.OnCameraMoveListener,
+    MapLibreMap.OnCameraIdleListener {
+
+
+    companion object {
+
+        const val BACKGROUND_LAYER_NAME = "cts_background-layer"
+        const val DEFAULT_ZOOM = 14.0
+
+        const val RASTER_LAYER = "-raster-layer"
+        const val RASTER_SOURCE = "-raster-source"
+
+        const val SYMBOL_LAYER = "-symbol-layer"
+        const val SYMBOL_SOURCE = "-symbol-source"
+    }
 
 
     // 地图style
@@ -44,6 +63,11 @@ class MapLibreManager(
     // 待查询的图层列表
     private val layerIds: MutableList<String> = mutableListOf()
     private var mapListener: ((List<Feature>) -> Unit)? = null
+    private var moveListener: (() -> Unit)? = null
+    private var onInfoWindowClickListener: (() -> Unit)? = null
+
+    // 当前的窗体
+    private var currentInfoWindow: View? = null
 
     /**
      * 初始化函数
@@ -53,6 +77,21 @@ class MapLibreManager(
         initStyle()
         // 添加地图点击事件
         maplibreMap.addOnMapClickListener(this)
+        maplibreMap.addOnCameraMoveListener(this)
+        maplibreMap.addOnCameraIdleListener(this)
+    }
+
+    /**
+     * 刷新窗体位置
+     */
+    fun updateInfoWindow(ctsMarker: CtsMarker) {
+        // 计算屏幕位置
+        val point = maplibreMap.projection.toScreenLocation(LatLng(ctsMarker.lat, ctsMarker.lon))
+        currentInfoWindow?.let {
+            currentInfoWindow?.x = point.x.minus(it.width / 2)
+            currentInfoWindow?.y =
+                point.y.minus(it.height).minus(DpUtils.dpToPx(context, 8f)) // 显示在Marker上方
+        }
     }
 
     /**
@@ -67,18 +106,25 @@ class MapLibreManager(
     }
 
     /**
-     * 清理待查询的图层列表
-     */
-    fun clearQueryLayer() {
-        this.layerIds.clear()
-    }
-
-    /**
      * 添加地图点击事件，返回被点击的要素列表
      * @param listener 监听接口
      */
     fun addMapClickListener(listener: (List<Feature>) -> Unit) {
         mapListener = listener
+    }
+
+    /**
+     * 添加地图移动监听事件
+     */
+    fun addMoveListener(listener: () -> Unit) {
+        moveListener = listener
+    }
+
+    /**
+     * 添加infoWindow 点击事件
+     */
+    fun addOnInfoWindowListener(listener: () -> Unit) {
+        onInfoWindowClickListener = listener
     }
 
     fun getCurrentZoom(): Double {
@@ -106,6 +152,7 @@ class MapLibreManager(
     /**
      * 获取地图style
      */
+    @Suppress("unused")
     fun getStyle(): Style {
         return style
     }
@@ -231,13 +278,15 @@ class MapLibreManager(
      * */
     fun setLayerVisible(layerId: String, visible: Boolean) {
         val layer = style.getLayer(layerId)
-        layer?.apply {
-            setProperties(
-                PropertyFactory.visibility(
-                    if (visible) Property.VISIBLE else Property.NONE
-                )
-            )
-        }
+        layer?.setVisible(visible)
+    }
+
+    /**
+     * 设置Raster图层是否可见
+     */
+    fun setRasterLayerVisible(layerId: String, visible: Boolean) {
+        val newLayerId = "$layerId$RASTER_LAYER"
+        setLayerVisible(newLayerId, visible)
     }
 
     /**
@@ -282,6 +331,7 @@ class MapLibreManager(
      * @param imageName 图标名称
      * @param drawableResId 图标
      */
+    @Suppress("unused")
     fun addImage(imageName: String, drawableResId: Int) {
         val bitmap = BitmapFactory.decodeResource(context.resources, drawableResId)
         addImage(imageName, bitmap)
@@ -294,8 +344,8 @@ class MapLibreManager(
      */
     fun addRasterLayer(name: String, uri: String) {
 
-        val rasterLayerId = "$name-raster-layer"
-        val rasterSourceId = "$name-raster-source"
+        val rasterLayerId = "$name$RASTER_LAYER"
+        val rasterSourceId = "$name$RASTER_SOURCE"
 
         val rasterSource = RasterSourceBuilder()
             .withId(rasterSourceId)
@@ -325,8 +375,8 @@ class MapLibreManager(
         onBounds: ((LatLngBounds) -> Unit)? = null,
         onFinish: (() -> Unit)? = null
     ) {
-        val layerName = "$name-symbol-layer"
-        val sourceName = "$name-symbol-source"
+        val layerName = "$name$SYMBOL_LAYER"
+        val sourceName = "$name$SYMBOL_SOURCE"
         // 删除图层
         removeLayer(layerName)
         // 构造geoJson数据源
@@ -385,6 +435,7 @@ class MapLibreManager(
      * 删除图层
      * @param layer 图层
      */
+    @Suppress("unused")
     fun removeLayer(layer: Layer) {
         style.removeLayer(layer)
     }
@@ -404,8 +455,55 @@ class MapLibreManager(
      * 删除数据源
      * @param source 数据源
      */
+    @Suppress("unused")
     fun removeSource(source: Source) {
         style.removeSource(source)
+    }
+
+    /**
+     * 展示infoWindow
+     */
+    fun showInfoWindow(latLng: LatLng, title: String, lon: String, lat: String) {
+
+        currentInfoWindow?.let {
+            mapView.removeView(it)
+        }
+        // 创建信息窗口视图
+        currentInfoWindow =
+            LayoutInflater.from(context).inflate(R.layout.common_gis_info_window, mapView, false)
+        currentInfoWindow?.findViewById<TextView>(R.id.title)?.text = title
+        currentInfoWindow?.findViewById<TextView>(R.id.longitude)?.text = lon
+        currentInfoWindow?.findViewById<TextView>(R.id.latitude)?.text = lat
+
+        currentInfoWindow?.visibility = View.INVISIBLE
+        // 添加到地图并显示
+        mapView.addView(currentInfoWindow)
+
+        currentInfoWindow?.viewTreeObserver?.addOnGlobalLayoutListener(
+            object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    currentInfoWindow?.viewTreeObserver?.removeOnGlobalLayoutListener(this)
+                    // 计算屏幕位置
+                    val point = maplibreMap.projection.toScreenLocation(latLng)
+                    currentInfoWindow?.let {
+                        currentInfoWindow?.x = point.x.minus(it.width / 2)
+                        currentInfoWindow?.y = point.y.minus(it.height)
+                            .minus(DpUtils.dpToPx(context, 8f)) // 显示在Marker上方
+                    }
+                    currentInfoWindow?.setOnClickListener {
+                        onInfoWindowClickListener?.invoke()
+                    }
+                    currentInfoWindow?.visibility = View.VISIBLE
+
+                }
+            }
+        )
+    }
+
+    fun hideInfoWindow() {
+        currentInfoWindow?.let {
+            mapView.removeView(it)
+        }
     }
 
     override fun onMapClick(latlng: LatLng): Boolean {
@@ -416,5 +514,13 @@ class MapLibreManager(
             maplibreMap.queryRenderedFeatures(clickPoint, *layerIds.toTypedArray())
         mapListener?.invoke(features)
         return true
+    }
+
+    override fun onCameraMove() {
+        moveListener?.invoke()
+    }
+
+    override fun onCameraIdle() {
+        moveListener?.invoke()
     }
 }

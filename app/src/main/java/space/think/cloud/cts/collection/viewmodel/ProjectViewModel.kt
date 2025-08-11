@@ -14,7 +14,7 @@ class ProjectViewModel : BaseViewModel() {
 
     private val projectService = RetrofitClient.createService<ProjectService>()
 
-    fun search(name: String) = launch(
+    fun search(name: String,onSuccess:()-> Unit) = launch(
         {
             projectService.search(RequestProjectSearch(name = name))
         }
@@ -34,6 +34,7 @@ class ProjectViewModel : BaseViewModel() {
                 )
             }
         }
+        onSuccess()
     }
 
     override fun reset() {
