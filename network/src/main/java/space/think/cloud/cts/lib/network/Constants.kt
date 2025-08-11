@@ -8,4 +8,8 @@ object Constants {
         const val CODE = "code"
         const val STATUS = "status"
     }
+
+    object Tdt{
+        const val TOKEN = ""
+    }
 }

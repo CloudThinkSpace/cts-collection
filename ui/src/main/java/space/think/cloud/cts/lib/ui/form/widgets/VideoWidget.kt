@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +21,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import kotlinx.coroutines.launch
 import space.think.cloud.cts.lib.ui.form.MediaItem
 import space.think.cloud.cts.lib.ui.form.VideoView
 import kotlin.math.ceil
@@ -46,7 +48,8 @@ fun VideoWidget(
     enabled: Boolean = true,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onPreview: ((Uri) -> Unit)? = null,
-    onChangeValue: (Map<Int, MediaItem>) -> Unit,
+    onDelete: (Int) -> Unit,
+    onChangeValue: suspend (String, Int) -> Unit,
 ) {
 
     val localSoftwareKeyboardController = LocalSoftwareKeyboardController.current
@@ -62,6 +65,13 @@ fun VideoWidget(
     var selectIndex by remember {
         mutableIntStateOf(0)
     }
+
+    // 加载中
+    var loading by remember {
+        mutableStateOf(false)
+    }
+
+    val scope = rememberCoroutineScope()
 
     Widget(
         modifier = modifier,
@@ -97,7 +107,7 @@ fun VideoWidget(
                         title = subTitles[index],
                         uri = value[index]?.path?.toUri(),
                         isError = isError,
-                        loading = value[index]?.loading == true,
+                        loading = selectIndex == index && loading,
                         onClick = {
                             selectIndex = index
                         },
@@ -108,12 +118,15 @@ fun VideoWidget(
                             }
                         },
                         onPreview = onPreview
-                    ) {  path ->
+                    ) { path ->
                         localSoftwareKeyboardController?.hide()
-                        if (enabled) {
-                            val temp = value.toMutableMap()
-                            temp[selectIndex] = MediaItem(name = subTitles[selectIndex], path = path)
-                            onChangeValue(temp.toMap())
+                        loading = true
+                        path?.let {
+                            // 处理视频，添加水印
+                            scope.launch {
+                                onChangeValue(it, selectIndex)
+                                loading = false
+                            }
                         }
 
                     }
@@ -133,9 +146,7 @@ fun VideoWidget(
         confirmButton = {
             TextButton(onClick = {
                 isOpenDelete = false
-                val temp = value.toMutableMap()
-                temp.remove(currentImageIndex)
-                onChangeValue(temp.toMap())
+                onDelete(currentImageIndex)
 
             }) {
                 Text(text = "确定")
@@ -148,6 +159,4 @@ fun VideoWidget(
                 Text(text = "取消")
             }
         })
-
-
 }

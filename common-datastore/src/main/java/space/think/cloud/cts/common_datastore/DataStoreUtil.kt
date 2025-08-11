@@ -57,6 +57,8 @@ object PreferencesKeys {
     val LON_KEY = doublePreferencesKey("cloud_think_space_lon_key")
     // 纬度信息
     val LAT_KEY = doublePreferencesKey("cloud_think_space_lat_key")
+    // 地址信息
+    val ADDRESS_KEY = stringPreferencesKey("cloud_think_space_address_key")
     // 高程信息
     val ALTITUDE_KEY = doublePreferencesKey("cloud_think_space_altitude_key")
     // 方位角信息

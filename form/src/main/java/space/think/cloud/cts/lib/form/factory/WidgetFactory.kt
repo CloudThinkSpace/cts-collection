@@ -347,12 +347,13 @@ object WidgetFactory {
                     // 获取经纬度数据
                     val lon = dataStoreUtil.getData(PreferencesKeys.LON_KEY, 0.0).first()
                     val lat = dataStoreUtil.getData(PreferencesKeys.LAT_KEY, 0.0).first()
+                    val address = dataStoreUtil.getData(PreferencesKeys.ADDRESS_KEY, "").first()
                     val df = DecimalFormat("#.######")
                     // 准备表格数据
                     val tableData = listOf(
                         listOf("经度:", df.format(lon)),
                         listOf("纬度:", df.format(lat)),
-                        listOf("地址:", "1"),
+                        listOf("地址:", address),
                         listOf(
                             "时间:",
                             DateUtil.dateToString(Date(), "yyyy年MM月dd日 HH:mm:ss")
@@ -390,9 +391,25 @@ object WidgetFactory {
                     enabled = localField.enabled,
                     subTitles = localField.subTitles ?: listOf(),
                     description = localField.description,
-                ) { newValue ->
+                    onDelete = {
+                        // 更新图片
+                        val temp = localField.getMediasToMap().toMutableMap()
+                        temp.remove(it)
+                        val updated =
+                            localField.copy(value = StringUtil.mapToString(temp), error = null)
+                        localField = updated
+                        onChange(updated)
+                    }
+                ) { path, selectIndex ->
+                    // 更新视频
+                    val temp = localField.getMediasToMap().toMutableMap()
+                    temp[selectIndex] =
+                        MediaItem(
+                            name = localField.subTitles!![selectIndex],
+                            path = path
+                        )
                     val updated =
-                        localField.copy(value = StringUtil.mapToString(newValue), error = null)
+                        localField.copy(value = StringUtil.mapToString(temp), error = null)
                     localField = updated
                     onChange(updated)
                 }
