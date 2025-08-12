@@ -10,7 +10,7 @@ import androidx.core.graphics.withRotation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import space.think.cloud.cts.lib.watermark.utils.CanvasUtil
-import kotlin.math.ceil
+import space.think.cloud.cts.lib.watermark.utils.StringUtil
 import kotlin.math.max
 
 
@@ -48,8 +48,8 @@ class Watermark(
     private val headerTextSize: Float = 86f,
     private val headerTextColor: Int = Color.WHITE,
     private val headerPadding: Padding = Padding(10f, 20f),
-    private val cellColor: Int = Color.argb(150, 255, 255, 255),
-    private val borderColor: Int = Color.WHITE,
+    private val cellColor: Int = Color.argb(200, 255, 255, 255),
+    private val borderColor: Int = Color.argb(255, 70, 70, 70),
     private val borderWidth: Float = 0f,
     private val cellBorderWidth: Float = 0f,
     private val cellBorderColor: Int = Color.WHITE,
@@ -210,7 +210,7 @@ class Watermark(
                         // 当前字符内容
                         val currentContent = tableData[i][j]
                         // 计算字符串可以分多少行
-                        val lines = ceil(currentContent.length / maxLineLength.toFloat()).toInt()
+                        val lines = StringUtil.lines(currentContent, maxLineLength).size
                         // 字符串的高度
                         val fontHeight = textPaint.ascent() + textPaint.descent()
                         //  如果是单行，文字写单元格起始位置上

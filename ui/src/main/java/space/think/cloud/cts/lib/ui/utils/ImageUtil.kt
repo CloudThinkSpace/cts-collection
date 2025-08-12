@@ -6,6 +6,8 @@ import space.think.cloud.cts.lib.watermark.Margin
 import space.think.cloud.cts.lib.watermark.MimeType
 import space.think.cloud.cts.lib.watermark.Padding
 import space.think.cloud.cts.lib.watermark.Watermark
+import space.think.cloud.cts.lib.watermark.WatermarkFactory
+import space.think.cloud.cts.lib.watermark.impl.TableWatermark
 import space.think.cloud.cts.lib.watermark.utils.BitmapCompressor
 import space.think.cloud.cts.lib.watermark.utils.BitmapUriLoader
 import space.think.cloud.cts.lib.watermark.utils.BitmapUriWriter
@@ -29,14 +31,22 @@ object ImageUtil {
         originBitmap?.let {
 
             // 2. 创建水印bitmap
-            val bitmap = Watermark(
-                originalBitmap = originBitmap,
+//            val bitmap = Watermark(
+//                originalBitmap = originBitmap,
+//                tableData = tableData,
+//                headerTitle = title,
+//                margin = Margin(150f),
+//                textVerticalCenter = true,
+//                cellPadding = Padding(30f, 10f)
+//            ).draw()
+
+            val watermark = TableWatermark(
                 tableData = tableData,
                 headerTitle = title,
-                margin = Margin(150f),
                 textVerticalCenter = true,
                 cellPadding = Padding(30f, 10f)
-            ).draw()
+            )
+            val bitmap = WatermarkFactory.create(watermark, it)
 
             // 3. 删除文件
             UriFileDeleter.deleteFile(context, uri = uri)
