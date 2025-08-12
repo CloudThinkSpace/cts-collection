@@ -1,11 +1,9 @@
 package space.think.cloud.cts.lib.ui.utils
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
-import space.think.cloud.cts.lib.watermark.Margin
-import space.think.cloud.cts.lib.watermark.MimeType
 import space.think.cloud.cts.lib.watermark.Padding
-import space.think.cloud.cts.lib.watermark.Watermark
 import space.think.cloud.cts.lib.watermark.WatermarkFactory
 import space.think.cloud.cts.lib.watermark.impl.TableWatermark
 import space.think.cloud.cts.lib.watermark.utils.BitmapCompressor
@@ -30,16 +28,6 @@ object ImageUtil {
 
         originBitmap?.let {
 
-            // 2. 创建水印bitmap
-//            val bitmap = Watermark(
-//                originalBitmap = originBitmap,
-//                tableData = tableData,
-//                headerTitle = title,
-//                margin = Margin(150f),
-//                textVerticalCenter = true,
-//                cellPadding = Padding(30f, 10f)
-//            ).draw()
-
             val watermark = TableWatermark(
                 tableData = tableData,
                 headerTitle = title,
@@ -52,17 +40,18 @@ object ImageUtil {
             UriFileDeleter.deleteFile(context, uri = uri)
 
             // 压缩图片
-            val compressBitmap = BitmapCompressor.compressQuality(bitmap)
+            val pairBitmap = BitmapCompressor.compressQuality(bitmap)
 
             // 4. 保存图片
-            BitmapUriWriter.writeImage(
+            val uri =  BitmapUriWriter.writeImage(
                 context = context,
-                bitmap = compressBitmap,
+                bitmap = pairBitmap.first,
                 displayName = "photo_${System.currentTimeMillis()}",
-                mimeType = MimeType.JPEG,
+                format = Bitmap.CompressFormat.JPEG,
                 folderName = "cts",
-                onResult = onResult,
             )
+
+            onResult(uri)
         }
 
     }

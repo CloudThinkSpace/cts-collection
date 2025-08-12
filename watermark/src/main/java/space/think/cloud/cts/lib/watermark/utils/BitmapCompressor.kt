@@ -1,248 +1,129 @@
 package space.think.cloud.cts.lib.watermark.utils
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Matrix
-import android.net.Uri
-import android.os.Build
-import android.util.Log
-import androidx.exifinterface.media.ExifInterface
+import android.graphics.Paint
+import androidx.core.graphics.createBitmap
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
+import kotlin.math.sqrt
 
 object BitmapCompressor {
-    private const val TAG = "BitmapCompressor"
-    private const val DEFAULT_QUALITY = 75
-    private const val DEFAULT_MAX_SIZE_KB = 300 //  512kb
+
+    private const val MAX_SIZE_KB = 150 // 目标最大大小：300KB
+    private const val MAX_SIZE_BYTES = MAX_SIZE_KB * 1024 // 转换为字节
+    private const val MIN_QUALITY = 30 // 最小质量值（避免过度压缩导致严重失真）
 
     /**
      * 质量压缩 (兼容所有Android版本)
-     * @param bitmap 原始位图
+     * @param source 原始位图
      * @param format 压缩格式 (JPEG/PNG/WEBP)
-     * @param quality 质量 (0-100)
      * @param maxSizeKB 目标最大大小(KB)
+     * @param minQuality 目标最小压缩质量，默认30
      * @return 压缩后的Bitmap
      */
     @JvmOverloads
     fun compressQuality(
-        bitmap: Bitmap,
+        source: Bitmap,
         format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG,
-        quality: Int = DEFAULT_QUALITY,
-        maxSizeKB: Int = DEFAULT_MAX_SIZE_KB
-    ): Bitmap {
-        val outputStream = ByteArrayOutputStream()
-        var currentQuality = quality.coerceIn(0, 100)
+        maxSizeKB: Int = MAX_SIZE_BYTES,
+        minQuality: Int = MIN_QUALITY,
+    ): Pair<Bitmap, Int> {
+        // 先尝试质量压缩
+        var quality = 100
+        var compressedBytes = bitmapToByteArray(source, format, quality)
 
-        // 渐进式压缩直到满足大小要求或质量低于10
-        do {
-            outputStream.reset()
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && format == Bitmap.CompressFormat.WEBP) {
-                    // Android 11+ 支持无损WEBP
-                    bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, currentQuality, outputStream)
-                } else {
-                    bitmap.compress(format, currentQuality, outputStream)
+        // 质量压缩循环（仅对JPEG有效，PNG会直接跳过）
+        if (format == Bitmap.CompressFormat.JPEG) {
+            while (compressedBytes.size > maxSizeKB && quality > minQuality) {
+                quality -= 5 // 每次降低5%质量
+                compressedBytes = bitmapToByteArray(source, format, quality)
+            }
+        }
+        // 如果质量压缩后仍超标，则进行尺寸压缩
+        return if (compressedBytes.size <= maxSizeKB) {
+            // 质量压缩已满足要求
+            val resultBitmap =
+                BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.size)
+            Pair(resultBitmap, quality)
+        } else {
+            // 需要结合尺寸压缩
+            val scaleRatio = sqrt(maxSizeKB.toDouble() / compressedBytes.size).toFloat()
+            var currentScale = scaleRatio.coerceAtMost(0.9f)
+
+            var scaledBitmap = source
+            var attempts = 0
+
+            while (true) {
+                // 回收上一次的缩放Bitmap
+                if (attempts > 0 && scaledBitmap != source) {
+                    scaledBitmap.recycle()
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Compress error: ${e.message}")
-                break
-            }
-            currentQuality -= 5
-        } while (outputStream.size() > maxSizeKB * 1024 && currentQuality > 10)
 
-        val options = BitmapFactory.Options().apply {
-            // 防止OOM
-            inPreferredConfig = Bitmap.Config.RGB_565
-            inSampleSize = 1
+                // 计算新尺寸
+                val newWidth = (source.width * currentScale).toInt()
+                val newHeight = (source.height * currentScale).toInt()
+
+                // 执行缩放
+                scaledBitmap = scaleBitmap(source, newWidth, newHeight)
+
+                // 再次应用质量压缩
+                compressedBytes = bitmapToByteArray(scaledBitmap, format, quality)
+
+                // 检查是否满足条件或达到最大尝试次数
+                if (compressedBytes.size <= maxSizeKB || attempts >= 8) {
+                    break
+                }
+
+                currentScale *= 0.9f
+                attempts++
+            }
+
+            val resultBitmap =
+                BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.size)
+            Pair(resultBitmap, quality)
         }
 
-        return BitmapFactory.decodeByteArray(outputStream.toByteArray(), 0, outputStream.size())
-            ?: bitmap // 如果解码失败返回原始bitmap
     }
 
     /**
-     * 尺寸压缩 (兼容所有版本)
-     * @param bitmap 原始位图
-     * @param maxWidth 最大宽度
-     * @param maxHeight 最大高度
-     * @return 压缩后的Bitmap
+     * 将Bitmap转换为字节数组（带质量参数）
      */
-    fun compressSize(
+    private fun bitmapToByteArray(
         bitmap: Bitmap,
-        maxWidth: Int,
-        maxHeight: Int
-    ): Bitmap {
-        val width = bitmap.width
-        val height = bitmap.height
-
-        if (width <= maxWidth && height <= maxHeight) {
-            return bitmap
-        }
-
-        val scale = calculateScaleRatio(width, height, maxWidth, maxHeight)
-
-        val matrix = Matrix()
-        matrix.postScale(scale, scale)
-
-        return try {
-            Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true)
-        } catch (e: OutOfMemoryError) {
-            Log.e(TAG, "OOM during size compression: ${e.message}")
-            // 尝试更激进的压缩
-            Bitmap.createScaledBitmap(bitmap, maxWidth, maxHeight, true)
+        format: Bitmap.CompressFormat,
+        quality: Int
+    ): ByteArray {
+        return ByteArrayOutputStream().use { outputStream ->
+            bitmap.compress(format, quality, outputStream)
+            outputStream.toByteArray()
         }
     }
 
     /**
-     * 从URI加载并自动压缩 (兼容所有版本)
+     * 高质量缩放Bitmap到指定尺寸
      */
-    @JvmOverloads
-    fun loadAndCompress(
-        context: Context,
-        uri: Uri,
-        reqWidth: Int,
-        reqHeight: Int,
-        quality: Int = DEFAULT_QUALITY
-    ): Bitmap? {
-        var inputStream: InputStream? = null
-        return try {
-            // 第一次解码只获取尺寸
-            val options = BitmapFactory.Options().apply {
-                inJustDecodeBounds = true
-                // 使用更节省内存的配置
-                inPreferredConfig = Bitmap.Config.RGB_565
+    private fun scaleBitmap(source: Bitmap, newWidth: Int, newHeight: Int): Bitmap {
+        return if (source.config == null) source else {
+            createBitmap(newWidth, newHeight, source.config!!).apply {
+                val canvas = Canvas(this)
+                val paint = Paint().apply {
+                    isAntiAlias = true
+                    isFilterBitmap = true
+                    isDither = true
+                }
+                canvas.drawBitmap(
+                    source,
+                    Matrix().apply {
+                        postScale(
+                            newWidth.toFloat() / source.width,
+                            newHeight.toFloat() / source.height
+                        )
+                    },
+                    paint
+                )
             }
-
-            inputStream = context.contentResolver.openInputStream(uri)
-            BitmapFactory.decodeStream(inputStream, null, options)
-            inputStream?.close()
-
-            // 计算采样率
-            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
-            options.inJustDecodeBounds = false
-
-            // 加载调整尺寸后的Bitmap
-            inputStream = context.contentResolver.openInputStream(uri)
-            var bitmap = BitmapFactory.decodeStream(inputStream, null, options)
-            inputStream?.close()
-
-            // 处理旋转（如果是照片）
-            bitmap = bitmap?.let { correctRotation(context, it, uri) }
-
-            // 质量压缩
-            bitmap?.let { compressQuality(it, quality = quality) }
-        } catch (e: Exception) {
-            Log.e(TAG, "loadAndCompress error: ${e.message}")
-            null
-        } finally {
-            try {
-                inputStream?.close()
-            } catch (e: IOException) {
-                Log.e(TAG, "Failed to close stream: ${e.message}")
-            }
-        }
-    }
-
-    /**
-     * 保存压缩后的图片到文件 (兼容所有版本)
-     */
-    @JvmOverloads
-    fun saveCompressedBitmap(
-        bitmap: Bitmap,
-        destination: File,
-        format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG,
-        quality: Int = DEFAULT_QUALITY
-    ): Boolean {
-        var outputStream: FileOutputStream? = null
-        return try {
-            outputStream = FileOutputStream(destination)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && format == Bitmap.CompressFormat.WEBP) {
-                bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, quality, outputStream)
-            } else {
-                bitmap.compress(format, quality, outputStream)
-            }
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "saveCompressedBitmap error: ${e.message}")
-            false
-        } finally {
-            try {
-                outputStream?.close()
-            } catch (e: IOException) {
-                Log.e(TAG, "Failed to close stream: ${e.message}")
-            }
-        }
-    }
-
-    // ============= 私有方法 =============
-
-    private fun calculateInSampleSize(
-        options: BitmapFactory.Options,
-        reqWidth: Int,
-        reqHeight: Int
-    ): Int {
-        val (height, width) = options.outHeight to options.outWidth
-        var inSampleSize = 1
-
-        if (height > reqHeight || width > reqWidth) {
-            val halfHeight = height / 2
-            val halfWidth = width / 2
-
-            // 计算最大的inSampleSize值，保持宽高大于请求尺寸
-            while (halfHeight / inSampleSize >= reqHeight &&
-                halfWidth / inSampleSize >= reqWidth) {
-                inSampleSize *= 2
-            }
-
-            // 对于老设备更保守的采样
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                inSampleSize *= 2
-            }
-        }
-
-        return inSampleSize
-    }
-
-    private fun calculateScaleRatio(
-        originalWidth: Int,
-        originalHeight: Int,
-        maxWidth: Int,
-        maxHeight: Int
-    ): Float {
-        val widthRatio = maxWidth.toFloat() / originalWidth
-        val heightRatio = maxHeight.toFloat() / originalHeight
-        return widthRatio.coerceAtMost(heightRatio).coerceAtLeast(0.1f) // 最小缩放0.1
-    }
-
-    private fun correctRotation(context: Context, bitmap: Bitmap, uri: Uri): Bitmap {
-        return try {
-            val input = context.contentResolver.openInputStream(uri) ?: return bitmap
-            val exif = when {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> ExifInterface(input)
-                else -> ExifInterface(uri.path ?: return bitmap)
-            }
-
-            val orientation = exif.getAttributeInt(
-                ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_NORMAL
-            )
-
-            val matrix = Matrix()
-            when (orientation) {
-                ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
-                ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
-                ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
-                else -> return bitmap
-            }
-
-            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-        } catch (e: Exception) {
-            Log.e(TAG, "correctRotation error: ${e.message}")
-            bitmap
         }
     }
 }

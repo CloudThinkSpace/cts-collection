@@ -21,7 +21,9 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import space.think.cloud.cts.lib.ui.form.ImageView
 import space.think.cloud.cts.lib.ui.form.MediaItem
 import kotlin.math.ceil
@@ -48,7 +50,7 @@ fun ImageWidget(
     enabled: Boolean = true,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onPreview: ((Uri) -> Unit)? = null,
-    onDelete:(Int)-> Unit,
+    onDelete: (Int) -> Unit,
     onChangeValue: suspend (String, index: Int) -> Unit,
 ) {
 
@@ -123,7 +125,9 @@ fun ImageWidget(
                         path?.let {
                             // 处理图片，添加水印
                             scope.launch {
-                                onChangeValue(it, selectIndex)
+                                withContext(Dispatchers.IO) {
+                                    onChangeValue(it, selectIndex)
+                                }
                                 loading = false
                             }
                         }

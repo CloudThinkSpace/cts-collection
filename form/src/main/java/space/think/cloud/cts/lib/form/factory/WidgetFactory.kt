@@ -377,7 +377,6 @@ object WidgetFactory {
                         localField = updated
                         onChange(updated)
                     }
-
                 }
             }
 

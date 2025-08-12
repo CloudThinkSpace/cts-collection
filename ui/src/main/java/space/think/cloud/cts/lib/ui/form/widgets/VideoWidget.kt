@@ -21,7 +21,9 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import space.think.cloud.cts.lib.ui.form.MediaItem
 import space.think.cloud.cts.lib.ui.form.VideoView
 import kotlin.math.ceil
@@ -124,7 +126,9 @@ fun VideoWidget(
                         path?.let {
                             // 处理视频，添加水印
                             scope.launch {
-                                onChangeValue(it, selectIndex)
+                                withContext(Dispatchers.IO) {
+                                    onChangeValue(it, selectIndex)
+                                }
                                 loading = false
                             }
                         }
