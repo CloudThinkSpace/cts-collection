@@ -91,6 +91,15 @@ fun MainScreen(
                     project = it.project,
                     onBack = {
                         backStack.removeAt(backStack.lastIndex)
+                    },
+                    onClickDetail = { taskItem ->
+                        // 导航到表单页面，传入任务编号
+                        backStack.add(
+                            Form(
+                                code = taskItem.id,
+                                project = it.project
+                            )
+                        )
                     }
                 ) { taskItem ->
 

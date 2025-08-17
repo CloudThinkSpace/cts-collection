@@ -26,7 +26,7 @@ import space.think.cloud.cts.collection.nav.TopLevelBackStack
 import space.think.cloud.cts.collection.nav.TopLevelRoute
 
 // Home 菜单页面
-private val HOME_LEVEL_ROUTES: List<TopLevelRoute> = listOf(Project, Dashboard, Me)
+private val HOME_LEVEL_ROUTES: List<TopLevelRoute> = listOf(Project, Me)
 
 /**
  * 该界面是程序的菜单界面，包含底部菜单页

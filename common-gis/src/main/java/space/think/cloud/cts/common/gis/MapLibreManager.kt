@@ -79,6 +79,8 @@ class MapLibreManager(
         maplibreMap.addOnMapClickListener(this)
         maplibreMap.addOnCameraMoveListener(this)
         maplibreMap.addOnCameraIdleListener(this)
+        // 设置最大缩放级别
+        maplibreMap.setMaxZoomPreference(17.0)
     }
 
     /**

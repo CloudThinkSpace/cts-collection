@@ -16,13 +16,29 @@ class TaskViewModel : BaseViewModel() {
 
     private val taskService = RetrofitClient.createService<TaskService>()
 
-    fun search(dataTableName: String, searchValue: String, onResult: () -> Unit) = launch(
+    /**
+     * 查询任务表
+     * @param dataTableName 任务表
+     * @param searchValue 查询条件
+     * @param status 查询状态
+     */
+    fun search(dataTableName: String, searchValue: String, status:Int = 0, onResult: () -> Unit) = launch(
         {
             taskService.search(
                 RequestTask(
                     page = RequestPage(),
                     fields = listOf("code", "lon", "lat", "status", "id"),
-                    wheres = listOf("code like '%${searchValue}%'")
+                    wheres = when(status) {
+                        1 -> {
+                            listOf("code like '%${searchValue}%'", "status = 0")
+                        }
+                        2 -> {
+                            listOf("code like '%${searchValue}%'", "status = 1")
+                        }
+                        else -> {
+                            listOf("code like '%${searchValue}%'")
+                        }
+                    }
                 ),
                 dataTableName = dataTableName,
             )

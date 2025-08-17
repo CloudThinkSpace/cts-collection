@@ -15,6 +15,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -22,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,14 +59,15 @@ fun TaskScreen(
     var isLoading by remember { mutableStateOf(true) }
 
     var searchValue by remember { mutableStateOf("") }
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val tabs = listOf("全部", "未采", "已采")
 
-    LaunchedEffect(searchValue) {
+    LaunchedEffect(searchValue, selectedTabIndex) {
         isLoading = true
-        taskViewModel.search(project.dataTableName, searchValue) {
+        taskViewModel.search(project.dataTableName, searchValue, selectedTabIndex) {
             isLoading = false
         }
     }
-
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -106,16 +112,43 @@ fun TaskScreen(
             )
         }
     ) { paddingValues ->
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+
+        Column(
+            modifier = Modifier.padding(paddingValues)
+        ) {
+
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                indicator = { tabPositions ->
+                    if (selectedTabIndex < tabPositions.size) {
+                        TabRowDefaults.SecondaryIndicator(
+                            Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                            color = Color(0xFF6A87E7)
+                        )
+                    }
+                }
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = {
+                            Text(
+                                title,
+                                color = if (selectedTabIndex == index) Color(0xFF2196F3) else Color.White
+                            )
+                        },
+                    )
+                }
             }
 
-        } else {
-            Column(
-                modifier = Modifier.padding(paddingValues)
-            ) {
-
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
                 TaskContent(
                     taskList = taskList,
                     onClick = {
@@ -124,7 +157,6 @@ fun TaskScreen(
                     onClickDetail = onClickDetail,
                 )
             }
-
         }
     }
 
