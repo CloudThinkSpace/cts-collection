@@ -189,7 +189,7 @@ class MapLibreManager(
     fun animateToLatLng(
         latLng: LatLng,
         zoom: Double = DEFAULT_ZOOM,
-        delay: Int = 2000,
+        delay: Int = 1000,
         onFinish: (() -> Unit)? = null
     ) {
         // 移动到点位
@@ -219,7 +219,7 @@ class MapLibreManager(
      */
     fun animateToBounds(
         bounds: List<LatLng>,
-        delay: Int = 2000,
+        delay: Int = 1000,
         onFinish: (() -> Unit)? = null
     ) {
         val latLngBounds = LatLngBounds.fromLatLngs(bounds)

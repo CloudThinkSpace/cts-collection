@@ -147,7 +147,7 @@ class MapLibreMapController(
     fun animateToLatLng(
         latLng: LatLng,
         zoom: Double = DEFAULT_ZOOM,
-        delay: Int = 2000,
+        delay: Int = 1000,
         onFinish: (() -> Unit)? = null
     ) {
         mapLibreManager.animateToLatLng(latLng, zoom, delay, onFinish)
@@ -155,7 +155,7 @@ class MapLibreMapController(
 
     fun animateToBounds(
         bounds: List<LatLng>,
-        delay: Int = 2000,
+        delay: Int = 1000,
         onFinish: (() -> Unit)? = null
     ) {
         mapLibreManager.animateToBounds(bounds, delay) {
