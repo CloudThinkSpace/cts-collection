@@ -23,19 +23,40 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/longitude"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tool:text="lon"
-            android:textSize="14sp" />
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tool:text="经度："
+                android:text="@string/common_gis_lon"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/longitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tool:text="lon"
+                android:textSize="13sp" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/latitude"
+
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tool:text="lat"
-            android:textSize="14sp" />
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tool:text="纬度："
+                android:text="@string/common_gis_lat"
+                android:textSize="13sp" />
+            <TextView
+                android:id="@+id/latitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tool:text="lat"
+                android:textSize="13sp" />
+        </LinearLayout>
 
     </LinearLayout>
 

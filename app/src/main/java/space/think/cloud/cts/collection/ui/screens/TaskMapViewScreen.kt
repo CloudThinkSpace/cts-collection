@@ -279,7 +279,7 @@ fun TaskMapViewScreen(
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(top = 50.dp, bottom = 20.dp),
+                    .padding(top = 20.dp, bottom = 20.dp),
                 verticalArrangement = Arrangement.SpaceBetween
 
             ) {

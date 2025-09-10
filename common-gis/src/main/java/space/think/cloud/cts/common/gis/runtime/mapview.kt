@@ -23,6 +23,7 @@ fun rememberMapViewWithLifecycle(): MapView {
         var mapLibreMapOptions = MapLibreMapOptions.createFromAttributes(context).apply {
             logoEnabled(false)
             attributionEnabled(false)
+            rotateGesturesEnabled(false)
         }
         MapView(context, mapLibreMapOptions).apply {
             tag = false

@@ -20,7 +20,6 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -67,8 +66,6 @@ fun TaskScreen(
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -105,7 +102,6 @@ fun TaskScreen(
                         )
                     }
                 },
-                scrollBehavior = scrollBehavior,
             )
         }
     ) { paddingValues ->
