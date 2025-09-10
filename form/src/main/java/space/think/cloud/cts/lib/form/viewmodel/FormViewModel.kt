@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import space.think.cloud.cts.common_datastore.FormFieldDataStore
 import space.think.cloud.cts.lib.form.FormField
 import space.think.cloud.cts.lib.form.QuestionType
 import space.think.cloud.cts.lib.form.utils.FileUploadUtils
@@ -96,6 +97,15 @@ class FormViewModel : ViewModel() {
                 _error.value = e.toString()
             }
 
+        }
+    }
+
+    // 保存缓存数据
+    suspend fun saveToDataStore(dataStore: FormFieldDataStore) {
+        fields.forEach { formField ->
+            if (formField.cached) {
+                dataStore.save(formField.name, formField.value)
+            }
         }
     }
 

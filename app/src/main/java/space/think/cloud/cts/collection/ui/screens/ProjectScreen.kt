@@ -83,6 +83,7 @@ fun ProjectScreen(
         SearchAppBar(
             modifier = Modifier.padding(10.dp),
             searchValue = searchValue,
+            placeholder = "项目搜索",
             onClear = {
                 searchValue = ""
             }

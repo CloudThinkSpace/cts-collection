@@ -185,13 +185,22 @@ fun FormScreen(
                             onPass = {
                                 isSubmit = true
                                 scope.launch {
+                                    // 保存缓存数据
+                                    formViewModel.saveToDataStore(
+                                        FormFieldDataStore(
+                                            context,
+                                            project.id
+                                        )
+                                    )
+                                    // 提交表单数据
                                     formViewModel.submitData(
                                         context = context,
                                         taskId = taskId,
                                         project = project
                                     ) {
                                         isSubmit = false
-                                        Toast.makeText(context, "提交数据成功", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "提交数据成功", Toast.LENGTH_SHORT)
+                                            .show()
                                         scope.launch {
                                             formViewModel.reset()
                                         }

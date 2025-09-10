@@ -16,18 +16,22 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun SearchAppBar(
     modifier: Modifier,
     searchValue: String,
+    placeholder: String = "请输入内容",
     onClear: (() -> Unit)? = null,
     updateValue: (String) -> Unit
 ) {
@@ -63,6 +67,22 @@ fun SearchAppBar(
                     .weight(1f)
                     .align(Alignment.CenterVertically)
                     .padding(5.dp),
+                decorationBox = { innerTextField ->
+                    Box(contentAlignment = Alignment.CenterStart) {
+                        // 如果文本为空，显示提示
+                        if (searchValue.isEmpty()) {
+                            Text(
+                                text = placeholder,
+                                color = Color.Gray,
+                                style = TextStyle(
+                                    fontSize = 16.sp,
+                                    // 可以设置其他样式，如字体等
+                                )
+                            )
+                        }
+                        innerTextField() // 这是实际的输入框，必须调用
+                    }
+                }
             )
             if (searchValue.isNotEmpty()) {
                 Box(
